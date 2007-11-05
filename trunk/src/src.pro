@@ -14,4 +14,3 @@ OBJECTS_DIR = ../builds/
 QT += network xml opengl \
  script
 
-# Input

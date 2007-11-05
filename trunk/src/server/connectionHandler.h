@@ -18,55 +18,27 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QFile>
+#ifndef CONNECTIONHANDLER_H
+#define CONNECTIONHANDLER_H
 
-#include "gameListXML.h"
-#include "risiApplication.h"
+#include <QTcpSocket>
 
-RISIapplication* RISIapplication::inst = 0;
-
-RISIapplication::RISIapplication()
+class ConnectionHandler: public QTcpSocket
 {
-    xmlFile = new QFile("gameList.xml");
-}
+    Q_OBJECT
 
-RISIapplication* RISIapplication::instance()
-{
-    if (inst == 0)
-        inst = new RISIapplication;
-    return inst;
-}
+    public:
+        ConnectionHandler( QTcpSocket *sock = 0, QObject *parent = 0);
 
-void RISIapplication::initServer()
-{
-    server = Server::instance();
-    setupConnections();
-}
+        inline QTcpSocket *socket() const { return client; }
+    private slots:
+        void readReadyData();
+        void disconnected();
 
-void RISIapplication::initUI()
-{
-    risiUI = new RISIui( 0 );
-    risiUI->show();
-}
+    private:
+        void setupConnections();
 
-RISIapplication::~RISIapplication()
-{
-    delete xmlFile;
-}
+        QTcpSocket *client;
+};
 
-void RISIapplication::gameListXMLrequest( QStandardItemModel *m )
-{
-    GameListXML gameListXmlParser( m );
-    gameListXmlParser.readXML( xmlFile );
-}
-
-void RISIapplication::saveGameListXML( QStandardItemModel *model )
-{
-    GameListXML gameListXmlParser( model );
-    gameListXmlParser.writeXML( xmlFile );
-}
-
-void RISIapplication::setupConnections()
-{
-    connect( risiUI, SIGNAL(chosenGameToHost(const QString&)), server, SLOT( hostGame(const QString &)) );
-}
+#endif

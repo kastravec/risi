@@ -22,10 +22,20 @@
 
 #include "server.h"
 
+Server *Server::inst = 0;
+
 Server::Server( QObject *parent )
-    :QTcpServer(parent)
+    :QTcpServer(parent), hostedGames(), connections(), games()
 {
     connect( this, SIGNAL(newConnection()), this, SLOT(newPlayerConnection()) );
+}
+
+Server * Server::instance()
+{
+    if( inst == 0)
+        inst = new Server;
+
+    return inst;
 }
 
 void Server::readSettings()
@@ -53,8 +63,17 @@ void Server::newPlayerConnection()
 {
     if( hostedGames.count() != 0 )
     {
-        if( hasPendingConnections() )
-            nextPendingConnection() ;
+        while( hasPendingConnections() )
+        {
+            QTcpSocket *newConnection = nextPendingConnection();
+            ConnectionHandler *newConnectionHandler = new ConnectionHandler( newConnection, this );
+            connections[ newConnection ] = newConnectionHandler;
+        }
     }
+}
 
+void Server::playerDisconnected( ConnectionHandler *handler )
+{
+    connections.remove( handler->socket() );
+    handler->deleteLater();
 }
