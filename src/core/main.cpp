@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
     app.setOrganizationName( "RISI script your game" );
 
     RISIapplication::instance()->initUI();
+    RISIapplication::instance()->initServer();
+
     return app.exec();
 }
 

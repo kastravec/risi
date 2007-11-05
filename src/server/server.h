@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci   *
- *   psaraci@gmail.com   *
+ *   Copyright (C) 2007 by Petref Saraci                                   *
+ *   psaraci@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,7 +23,7 @@
 
 #include <QTcpServer>
 
-#include "core/player.h"
+#include "connectionHandler.h"
 #include "core/game.h"
 
 class Server : public QTcpServer
@@ -31,10 +31,12 @@ class Server : public QTcpServer
         Q_OBJECT
 
     public:
-        Server( QObject *parent = 0);
+        static Server * instance();
 
         QList <Game *> allHostedGames() const { return hostedGames; }
         QList <Game *> allGames() const { return games; }
+
+        void playerDisconnected( ConnectionHandler *handler );
 
     public slots:
         void hostGame(const QString &gameName);
@@ -43,8 +45,13 @@ class Server : public QTcpServer
         void newPlayerConnection();
 
     private:
+        Server( QObject *parent = 0);
+
         QList <Game *> hostedGames;
         QList <Game *> games;
+        QMap <QTcpSocket *, ConnectionHandler *> connections;
+
+        static Server *inst;
 
         bool start();
 
