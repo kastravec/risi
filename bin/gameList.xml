@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE game_list>
+<game_list version="1.0">
+    <game name="some game" tooltip="">
+        <file path="/path/to/paradise" name="/path/to/paradise"></file>
+        </game>
+    <game name="ssss" tooltip="janerik&#9;&#9;&#9;&#9;&#9;">
+        <file path="/home/psaraci/risi_source/profile.cpp" name="/home/psaraci/risi_source/profile.cpp"></file>
+        </game>
+    <game name="dddd" tooltip="gggg">
+        <file path="/home/psaraci/risi_source/boardItem.o" name="/home/psaraci/risi_source/boardItem.o"></file>
+        </game>
+    <game name="ffgggg" tooltip="fdhghf"></game>
+    </game_list>
