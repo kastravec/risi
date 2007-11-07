@@ -71,9 +71,11 @@ void RISIui::createDockWidget( DockWidgetType type )
             bottomDockWidget->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetClosable);
             bottomDockWidget->setWidget(chatUI);
             addDockWidget(Qt::BottomDockWidgetArea, bottomDockWidget);
+            break;
         }
         case Logger:
         {
+            break;
         }
         case Games:
         {
@@ -84,6 +86,7 @@ void RISIui::createDockWidget( DockWidgetType type )
             gameListDockWidget->setAllowedAreas( Qt::LeftDockWidgetArea );
             addDockWidget(Qt::LeftDockWidgetArea, gameListDockWidget);
             //             gameListDockWidget->hide();
+            break;
         }
     }
 }

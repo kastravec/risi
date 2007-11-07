@@ -31,14 +31,26 @@ class ConnectionHandler: public QTcpSocket
         ConnectionHandler( QTcpSocket *sock = 0, QObject *parent = 0);
 
         inline QTcpSocket *socket() const { return client; }
+
+        enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
+
     private slots:
         void readReadyData();
         void disconnected();
+        void socketErrors( QAbstractSocket::SocketError errors);//FIXME do i need this?
+        void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
 
     private:
         void setupConnections();
+        void parseMessage( QString msg );
+        void protocolError(ProtocolError error);
 
         QTcpSocket *client;
+        qint16 messageLength;
+        qint8 messageType;
+
+        int protocolFormat;
+        int protocolVersion;
 };
 
 #endif
