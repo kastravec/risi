@@ -24,12 +24,20 @@
 
 Server *Server::inst = 0;
 
+/**
+ * Private default constructor
+ * @param parent
+ */
 Server::Server( QObject *parent )
     :QTcpServer(parent), hostedGames(), connections(), games()
 {
     connect( this, SIGNAL(newConnection()), this, SLOT(newPlayerConnection()) );
 }
 
+/**
+ * returns the instance of Server, singleton pattern
+ * @return Server*
+ */
 Server * Server::instance()
 {
     if( inst == 0)
@@ -59,6 +67,9 @@ bool Server::start()
     return listen();
 }
 
+/**
+ * this slot is called for every new incoming connection
+ */
 void Server::newPlayerConnection()
 {
     if( hostedGames.count() != 0 )
@@ -72,6 +83,10 @@ void Server::newPlayerConnection()
     }
 }
 
+/**
+ * this function removes a connection which was dropped/disconnected
+ * @param handler
+ */
 void Server::playerDisconnected( ConnectionHandler *handler )
 {
     connections.remove( handler->socket() );
