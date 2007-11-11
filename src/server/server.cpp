@@ -62,33 +62,28 @@ void Server::hostGame(const QString &gameName)
         qDebug()<<gameName;
 }
 
-bool Server::start()
-{
-    return listen();
-}
-
 /**
  * this slot is called for every new incoming connection
  */
 void Server::newPlayerConnection()
 {
-    if( hostedGames.count() != 0 )
-    {
         while( hasPendingConnections() )
         {
             QTcpSocket *newConnection = nextPendingConnection();
             ConnectionHandler *newConnectionHandler = new ConnectionHandler( newConnection, this );
             connections[ newConnection ] = newConnectionHandler;
         }
-    }
 }
 
 /**
  * this function removes a connection which was dropped/disconnected
  * @param handler
  */
-void Server::playerDisconnected( ConnectionHandler *handler )
+void Server::playerDisconnected( ConnectionHandler *handler, QString err )
 {
     connections.remove( handler->socket() );
     handler->deleteLater();
+
+    if( ! err.isNull() )
+        emit playerDisconnectedSignal( err );
 }

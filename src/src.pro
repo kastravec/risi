@@ -14,3 +14,7 @@ OBJECTS_DIR = ../builds/
 QT += network xml opengl \
  script
 
+HEADERS += core/tcpClient.h
+
+SOURCES += core/tcpClient.cpp
+

@@ -25,12 +25,21 @@
 #include <QStandardItemModel>
 #include <QPushButton>
 #include <QListView>
+#include <QSettings>
+
+//FIXME THIS CLASS WILL BE REDISGNED
 
 SettingsUI::SettingsUI(QWidget *parent )
-    :QDialog(parent)
+    :QDialog(parent), portSpin(new QSpinBox(this) )
 {
+    portSpin->setRange( 0, 9999 );
     setFixedSize( 400, 400 );
-    QWidget *page = new QWidget(this);
+
+    QWidget *page = new QWidget(this);//just an initial page for testing
+    QVBoxLayout *l = new QVBoxLayout;
+    l->addWidget( portSpin );
+    page->setLayout( l );
+
     QWidget *list = createListOfSettings();
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -45,11 +54,19 @@ SettingsUI::SettingsUI(QWidget *parent )
     mainLayout->addLayout( createButtons() );
 
     setLayout( mainLayout );
+
+    readSettings();
 }
 
+/**
+ * creates the left side of the ui form. Basically creates a listview with a several items
+ * @return
+ */
 QWidget * SettingsUI::createListOfSettings()
 {
     QListView * listViewSettings = new QListView(this);
+    listViewSettings->setEditTriggers( QAbstractItemView::NoEditTriggers );
+
     QStandardItemModel *listViewModel = new QStandardItemModel(this);
 
     listViewModel->appendRow( new QStandardItem( tr("General") ) );
@@ -88,7 +105,35 @@ void SettingsUI::settingsForItem( const QModelIndex & /*item*/)
 }
 
 void SettingsUI::applyButtonClicked()
-{}
+{
+    writeSettings();
+}
 
 void SettingsUI::okButtonClicked()
-{}
+{
+    writeSettings();
+}
+
+void SettingsUI::readSettings()
+{
+    QSettings settings;
+    settings.beginGroup( "Server" );
+    QVariant v = settings.value( "port", 2222 );
+    settings.endGroup();
+
+    bool ok;
+    int port = v.toInt( &ok );
+    if( ok )
+        portSpin->setValue( port );
+    else
+        portSpin->setValue( 9999 );
+}
+
+void SettingsUI::writeSettings()
+{
+    QSettings settings;
+
+    settings.beginGroup( "Server" );
+    settings.setValue( "port", 2222 );
+    settings.endGroup();
+}

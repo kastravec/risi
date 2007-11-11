@@ -26,7 +26,6 @@
 
 #include "chatUI.h"
 #include "gameListUI.h"
-#include "settingsUI.h"
 #include "editGamesUI.h"
 
 class RISIui: public QMainWindow
@@ -40,6 +39,7 @@ class RISIui: public QMainWindow
         void exitActionTriggered();
         void addRemoveGameActTriggered();
         void hostGameActionTriggered();
+        void playerDisconnectedSlot( const QString reason);
 
     signals:
         void chosenGameToHost( const QString &gameName );
@@ -57,7 +57,6 @@ class RISIui: public QMainWindow
         void createDockWidget(DockWidgetType type) ;
         void createCentralWidget();
 
-        SettingsUI settingsDialog;
         ChatUI *chatUI;
         GameListUI *gameListUI;
         QTabWidget *gameWidgetContainer;

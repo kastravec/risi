@@ -28,12 +28,13 @@ class HttpControler: public QObject
     Q_OBJECT
 
     public:
-        HttpControler( QObject *parent = 0 );
-
-    public slots:
+        static HttpControler *instance();
         void registerProfile( const QString userName, const QString pass);
 
     private:
+        HttpControler( QObject *parent = 0 );
+        static HttpControler *inst;
+
         QHttp http;
 };
 

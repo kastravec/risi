@@ -36,10 +36,13 @@ class Server : public QTcpServer
         QList <Game *> allHostedGames() const { return hostedGames; }
         QList <Game *> allGames() const { return games; }
 
-        void playerDisconnected( ConnectionHandler *handler );
+        void playerDisconnected( ConnectionHandler *handler, QString error );
 
     public slots:
         void hostGame(const QString &gameName);
+
+    signals:
+        void playerDisconnectedSignal(const QString msg);
 
     private slots:
         void newPlayerConnection();
@@ -52,8 +55,6 @@ class Server : public QTcpServer
         QMap <QTcpSocket *, ConnectionHandler *> connections;
 
         static Server *inst;
-
-        bool start();
 
         void readSettings();
         void writeSettings();

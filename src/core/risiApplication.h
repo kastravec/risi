@@ -23,6 +23,7 @@
 
 #include "ui/risiUI.h"
 #include "server/server.h"
+#include "tcpClient.h"
 
 class RISIapplication : public QObject
 {
@@ -34,17 +35,24 @@ class RISIapplication : public QObject
         void initUI();
         void initServer();
 
+        void go();//FIXME remove me
+
         static RISIapplication* instance();
 
         void gameListXMLrequest( QStandardItemModel *m );
         void saveGameListXML( QStandardItemModel *m );
 
     private:
-        RISIapplication();
+        RISIapplication( QObject *parent = 0 );
         void setupConnections();
+        void parseServerError();
 
         RISIui *risiUI;
         Server *server;
+        TcpClient *tcpClient;
+
+        bool isServerRunning;
+        QString serverErrors;
 
         QIODevice *xmlFile;
         static RISIapplication* inst;
