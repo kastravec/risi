@@ -26,6 +26,7 @@
 #include <QDebug>
 
 #include "core/risiApplication.h"
+#include "settingsUI.h"
 #include "risiUI.h"
 #include "hostGameDialog.h"
 
@@ -170,6 +171,7 @@ void RISIui::createMenus()
 
 void RISIui::settingsActionTriggered()
 {
+    SettingsUI settingsDialog(this);
     settingsDialog.exec();
 }
 void RISIui::exitActionTriggered()
@@ -203,4 +205,9 @@ void RISIui::hostGameActionTriggered()
         choseGame = hostGameDialog.chosenGame();
         emit chosenGameToHost( choseGame );
     }
+}
+
+void RISIui::playerDisconnectedSlot( const QString reason)
+{
+    QMessageBox::warning ( this, tr("Player disconnected: "), tr(" Player disconnected due to: ") + reason );
 }

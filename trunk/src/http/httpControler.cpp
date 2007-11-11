@@ -20,9 +20,20 @@
 
 #include "httpControler.h"
 
+HttpControler *HttpControler::inst = 0;
+
+
 HttpControler::HttpControler( QObject *parent )
     :QObject( parent )
 {
+}
+
+HttpControler *HttpControler::instance()
+{
+    if( inst == 0 )
+        inst = new HttpControler;
+
+    return inst;
 }
 
 void HttpControler::registerProfile( const QString userName, const QString pass)

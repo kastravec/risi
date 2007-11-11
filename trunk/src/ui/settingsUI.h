@@ -22,7 +22,11 @@
 #define SETTINGSUI_H
 
 #include <QDialog>
+#include <QSpinBox>
+
 class QModelIndex;
+
+//FIXME BETTER DESIGN FOR THIS CLASS
 
 class SettingsUI: public QDialog
 {
@@ -39,6 +43,10 @@ class SettingsUI: public QDialog
     private:
         QWidget * createListOfSettings() ;
         QLayout * createButtons();
+        QSpinBox *portSpin;
+
+        void readSettings();
+        void writeSettings();
 };
 
 #endif

@@ -23,16 +23,22 @@
 
 #include <QTcpSocket>
 
+/**
+ * list of message types:
+
+   a = Invalid protocolFormat
+   b = Invalid protocolVersion
+   c = Invalid protocol
+ */
 class ConnectionHandler: public QTcpSocket
 {
     Q_OBJECT
 
     public:
         ConnectionHandler( QTcpSocket *sock = 0, QObject *parent = 0);
+        ~ConnectionHandler();
 
         inline QTcpSocket *socket() const { return client; }
-
-        enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
 
     private slots:
         void readReadyData();
@@ -41,16 +47,20 @@ class ConnectionHandler: public QTcpSocket
         void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
 
     private:
+
+        enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
+
         void setupConnections();
         void parseMessage( QString msg );
+        void sendMessage(QString msg, qint8 type);
         void protocolError(ProtocolError error);
 
         QTcpSocket *client;
-        qint16 messageLength;
+        QString clientError;
         qint8 messageType;
-
-        int protocolFormat;
-        int protocolVersion;
+        qint32 packetSize;
+        qint32 protocolFormat;
+        qint32 protocolVersion;
 };
 
 #endif
