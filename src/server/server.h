@@ -43,6 +43,7 @@ class Server : public QTcpServer
 
     signals:
         void playerDisconnectedSignal(const QString msg);
+        void messageArrived( const QString msg );
 
     private slots:
         void newPlayerConnection();

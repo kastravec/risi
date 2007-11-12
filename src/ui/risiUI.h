@@ -39,12 +39,14 @@ class RISIui: public QMainWindow
         void exitActionTriggered();
         void addRemoveGameActTriggered();
         void hostGameActionTriggered();
+        void connectToIPActTriggered();
         void playerDisconnectedSlot( const QString reason);
 
     signals:
         void chosenGameToHost( const QString &gameName );
         void saveGameListXMLRequest( QStandardItemModel *m );
         void gameListXMLrequest( QStandardItemModel *m );
+        void connectToIPSignal( const QString ip, const int port );
 
     protected:
         void closeEvent( QCloseEvent *);
@@ -70,7 +72,7 @@ class RISIui: public QMainWindow
         QAction *useProfileAction;
         QAction *createProfileAction;
 
-        QAction *addServerAction;
+        QAction *connectToIPAction;
 
         QAction *helpAction;
         QAction *aboutQtAction;

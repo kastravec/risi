@@ -31,8 +31,6 @@ int main(int argc, char *argv[])
     RISIapplication::instance()->initUI();
     RISIapplication::instance()->initServer();
 
-    RISIapplication::instance()->go();
-
     return app.exec();
 }
 
