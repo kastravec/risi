@@ -23,6 +23,8 @@
 
 #include <QTcpSocket>
 
+class NetworkProtocol;
+
 class TcpClient: public QObject
 {
     Q_OBJECT
@@ -32,27 +34,23 @@ class TcpClient: public QObject
 
         void sendMessage(QString msg, qint8 type);
 
+    signals:
+        void messageArrived( const QString msg );
+
     private slots:
-        void connectToServer(const QString server, const int port );
-        void readReadyData();
+        void connectToServer( const QString server, const int port );
         void disconnected();
+        void protocolError( NetworkProtocol::ProtocolError err );
         void socketErrors( QAbstractSocket::SocketError errors);
         void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
 
     private:
-        enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
-
         void setupConnections();
-        void parseMessage( QString msg );
-        void protocolError(ProtocolError error);
 
         QTcpSocket *client;
-        QString clientError;
-        qint8 messageType;
-        qint32 packetSize;
-        qint32 protocolFormat;
-        qint32 protocolVersion;
+        NetworkProtocol networkProtocol;
 
+        QString clientError;
 };
 
 #endif

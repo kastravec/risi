@@ -6,8 +6,10 @@ HEADERS += core/board.h \
            core/gameListXML.h \
            core/player.h \
            core/profile.h \
-		   core/risiApplication.h
-		   
+		   core/tcpClient.h \
+		   core/protocol.h \
+		   core/risiApplication.h 
+
 SOURCES += core/board.cpp \
            core/boardItem.cpp \
            core/boardView.cpp \
@@ -16,5 +18,6 @@ SOURCES += core/board.cpp \
            core/main.cpp \
            core/player.cpp \
            core/profile.cpp \
+		   core/tcpClient.cpp \
+           core/protocol.cpp  \
 		   core/risiApplication.cpp
-		   

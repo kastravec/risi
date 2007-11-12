@@ -22,6 +22,7 @@
 #define CONNECTIONHANDLER_H
 
 #include <QTcpSocket>
+#include "globals/networkProtocol.h"
 
 /**
  * list of message types:
@@ -42,26 +43,21 @@ class ConnectionHandler: public QTcpSocket
 
     signals:
         void messageArrived( const QString msg );
+
     private slots:
-        void readReadyData();
         void disconnected();
+        void networkProtocolErrorSlot( NetworkProtocol::ProtocolError err );
         void socketErrors( QAbstractSocket::SocketError errors);//FIXME do i need this?
         void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
 
     private:
-
-        enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
-
         void setupConnections();
         void sendMessage(QString msg, qint8 type);
-        void protocolError(ProtocolError error);
 
         QTcpSocket *client;
+        NetworkProtocol networkProtocol;
+
         QString clientError;
-        qint8 messageType;
-        qint32 packetSize;
-        qint32 protocolFormat;
-        qint32 protocolVersion;
 };
 
 #endif

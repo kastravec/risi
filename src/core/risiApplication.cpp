@@ -56,7 +56,7 @@ void RISIapplication::initServer()
     if( ok )
     {
         Server::instance()->listen(QHostAddress::Any, port );
-        if( !Server::instance()->isListening() ) ;//FIXME COMPILER BUG????
+        if( !Server::instance()->isListening() )
             parseServerError();
     }
     else

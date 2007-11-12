@@ -71,8 +71,11 @@ void Server::newPlayerConnection()
         {
             QTcpSocket *newConnection = nextPendingConnection();
             ConnectionHandler *newConnectionHandler = new ConnectionHandler( newConnection, this );
+
+            //add a the socket and the connection handeler for that socket in a map
             connections[ newConnection ] = newConnectionHandler;
 
+            //for every message arrived, the connection handler will emit a signal to notify server to emit its signal
             connect ( newConnectionHandler, SIGNAL(messageArrived(const QString) ), this, SIGNAL(messageArrived(const QString)) );
         }
 }
