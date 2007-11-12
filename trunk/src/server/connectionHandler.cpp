@@ -20,7 +20,6 @@
 
 #include "server/connectionHandler.h"
 #include "server/server.h"
-#include <arpa/inet.h>
 
 /**
  * Default public constructor
@@ -29,9 +28,8 @@
  * @param parent
  */
 ConnectionHandler::ConnectionHandler( QTcpSocket *socket , QObject *parent )
-    :QTcpSocket( parent ), messageType(0), packetSize(-1), protocolFormat(10), protocolVersion(11)
+    :QTcpSocket( parent ), client(socket), networkProtocol(this, client), clientError()
 {
-    client = socket;
     setupConnections();
 }
 
@@ -45,7 +43,12 @@ ConnectionHandler::~ConnectionHandler()
  */
 void ConnectionHandler::setupConnections()
 {
-    connect( client, SIGNAL( readyRead() ), this, SLOT( readReadyData() ) );
+    connect( client, SIGNAL( readyRead() ), &networkProtocol, SLOT( readData() ) );
+
+    connect( &networkProtocol, SIGNAL(messageReady(const QString)), this, SIGNAL(messageArrived(const QString)));
+
+    connect(&networkProtocol, SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError) ), this, SLOT(networkProtocolErrorSlot(NetworkProtocol::ProtocolError)) );
+
     connect( client, SIGNAL(disconnected()), this, SLOT(disconnected()) );
 
 //TODO QAbstractSocket::SocketError is not a registered metatype, so for queued connections, you will have to register it with Q_REGISTER_METATYPE
@@ -54,108 +57,41 @@ void ConnectionHandler::setupConnections()
     connect( client, SIGNAL(stateChanged( QAbstractSocket::SocketState ) ), this, SLOT( socketStateChanged(QAbstractSocket::SocketState) ) );
 }
 
-/**
- * this slot is called when data are available for reading
- */
-void ConnectionHandler::readReadyData()
-{
-    while (client->bytesAvailable() > 0)
-    {
-        qDebug()<<"1";
-
-        if (packetSize == -1)
-        {
-            //make sure that there are available data to read
-            if( client->bytesAvailable() < sizeof(qint32) )
-                return;
-
-            qDebug()<<"2";
-
-            client->read(reinterpret_cast<char*>(&packetSize), sizeof(qint32));
-            packetSize = ntohl(packetSize);//FIXME byte order??
-        }
-
-        qDebug()<<"3";
-
-        //make sure that there are the whole packet is available
-        if (client->bytesAvailable() < packetSize)
-            return;
-
-        qDebug()<<"4";
-
-        //reseting the packet size since it ensured that there a whole packet is available
-        packetSize = -1;
-
-        //init the stream with the socket of the connection
-        QDataStream inStream( client );//FIXME datastream version?check qt-docs
-
-        //read and check the protocol format
-        qint32 format;
-        inStream >> format;
-        if( format != protocolFormat )
-        {
-            qDebug()<<"5";
-            protocolError( InvalidFormat );
-            return;
-        }
-        qDebug()<<"6";
-        //read and check the protocol version
-        qint32 version;
-        inStream >> version;
-
-        if( version != protocolVersion )
-        {
-            qDebug()<<"7";
-            protocolError( InvalidVersion );
-            return;
-        }
-        qDebug()<<"8";
-        //read protocol header: the type of message
-        inStream >> messageType;//TODO consider message types
-
-        //read message
-        QString message;
-        inStream >> message;
-
-        emit messageArrived( message );
-    }
-}
-
 void ConnectionHandler::sendMessage(QString msg, qint8 type)
 {
-    QByteArray packet;
+    QByteArray packet = networkProtocol.createPacket( msg, type );
+    qint32 size = networkProtocol.sizeOfPacket( packet );
 
-    QDataStream out(&packet, QIODevice::WriteOnly );
-    out<<protocolFormat;
-    out<<protocolVersion;
-
-    out << type;
-    out << msg;
-
-    qint32 size = htonl( packet.size() );
-
-    qDebug()<<client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
-    qDebug()<<client->write(packet);
+    //sending the packet size first
+    client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
+    //sendind the packet itself
+    client->write(packet);
 }
 
-void ConnectionHandler::protocolError(ProtocolError error)
+void ConnectionHandler::disconnected()
 {
-    switch( error )
+    Server::instance()->playerDisconnected( this, clientError );
+}
+
+void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError err )
+{
+    switch( err )
     {
-        case InvalidFormat:
+        case NetworkProtocol::InvalidFormat:
         {
             qDebug()<<"invalid protocol format";
             sendMessage("", 'a' );
-            client->flush();
+            client->flush();//causes the socket to send the data "immediately"
             client->close();
-            clientError = QString();
+            clientError = QString();//storing the error
             Server::instance()->playerDisconnected( this, clientError);
             break;
         }
-        case InvalidVersion:
+        case NetworkProtocol::InvalidVersion:
         {
             qDebug()<<"invalid protocol version";
             sendMessage("", 'b' );
+            client->flush();
             client->close();
             clientError = QString();
             Server::instance()->playerDisconnected( this, clientError );
@@ -165,16 +101,12 @@ void ConnectionHandler::protocolError(ProtocolError error)
         {
             qDebug()<<"unkown protocol error";
             sendMessage("", 'c' );
+            client->flush();
             client->close();
             clientError = QString();
             Server::instance()->playerDisconnected( this, clientError );
         }
     }
-}
-
-void ConnectionHandler::disconnected()
-{
-    Server::instance()->playerDisconnected( this, clientError );
 }
 
 void ConnectionHandler::socketErrors( QAbstractSocket::SocketError errors)
