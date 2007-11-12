@@ -28,7 +28,7 @@
 RISIapplication* RISIapplication::inst = 0;
 
 RISIapplication::RISIapplication( QObject *parent )
-    :QObject( parent ), xmlFile( new QFile("gameList.xml") ), tcpClient( new TcpClient( this ) ), serverErrors()
+    :QObject( parent ), xmlFile( new QFile("gameList.xml") ), tcpClient( new TcpClient( this ) ), serverErrors(), protocol( Protocol::instance() )
 {
 }
 
@@ -55,8 +55,8 @@ void RISIapplication::initServer()
 
     if( ok )
     {
-        server->listen(QHostAddress::Any, 11 );
-        if( !server->isListening() ) ;
+        Server::instance()->listen(QHostAddress::Any, port );
+        if( !Server::instance()->isListening() ) ;//FIXME COMPILER BUG????
             parseServerError();
     }
     else
@@ -76,6 +76,7 @@ RISIapplication::~RISIapplication()
 
     server->close();
     delete server;
+    delete protocol;
 }
 
 void RISIapplication::gameListXMLrequest( QStandardItemModel *m )
@@ -95,6 +96,11 @@ void RISIapplication::setupConnections()
     connect( risiUI, SIGNAL(chosenGameToHost(const QString&)), server, SLOT( hostGame(const QString &)) );
 
     connect( server, SIGNAL(playerDisconnectedSignal(const QString)), risiUI, SLOT(playerDisconnectedSlot(const QString) ) );
+
+    connect(server, SIGNAL(messageArrived(const QString)), protocol, SLOT(parseMessage(const QString)) );
+
+    connect( risiUI, SIGNAL(connectToIPSignal(const QString, const int)), tcpClient, SLOT(connectToServer(const QString, const int)) );
+
 }
 
 void RISIapplication::parseServerError()
@@ -177,10 +183,4 @@ void RISIapplication::parseServerError()
             QMessageBox::warning(0, tr("Server problem: "), tr("some sort of error") );
     }
 
-}
-
-void RISIapplication::go()
-{
-    tcpClient->connectToServer( "localhost", 2222);
-    tcpClient->sendMessage("blaaaaa", 'd');
 }

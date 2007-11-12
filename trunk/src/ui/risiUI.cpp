@@ -30,6 +30,49 @@
 #include "risiUI.h"
 #include "hostGameDialog.h"
 
+
+class ConnectToIPDialog: public QDialog
+{
+    public:
+        ConnectToIPDialog( QWidget * parent = 0 )
+        :QDialog( parent ), IPlineEdit( new QLineEdit( this) ), portSpinBox(new QSpinBox(this) )
+        {
+            setWindowTitle( tr("Connect to IP: ") );
+            portSpinBox->setRange( 0, 9999 );
+
+            QHBoxLayout *hlayout = new QHBoxLayout;
+            hlayout->addWidget( new QLabel( tr("IP: ") ) );
+            hlayout->addWidget( IPlineEdit );
+
+            QHBoxLayout *hlayout2 = new QHBoxLayout;
+            hlayout2->addWidget( new QLabel(tr("Port:")) );
+            hlayout2->addWidget( portSpinBox );
+
+            QHBoxLayout *hlayout3 = new QHBoxLayout;
+            QPushButton *okButton = new QPushButton( tr("OK" ), this);
+            QPushButton *cancelButton = new QPushButton( tr("Cancel"), this );
+            hlayout3->addWidget( okButton );
+            hlayout3->addWidget( cancelButton );
+
+            QVBoxLayout *vlayout = new QVBoxLayout;
+            vlayout->addLayout( hlayout );
+            vlayout->addLayout( hlayout2 );
+            vlayout->addLayout( hlayout3 );
+
+            setLayout( vlayout );
+
+            connect( okButton, SIGNAL(pressed()), this, SLOT(accept() ) );
+            connect( cancelButton, SIGNAL(pressed()), this, SLOT(reject() ) );
+        }
+
+        QString ip() const { return IPlineEdit->text(); }
+        int port() const { return portSpinBox->value(); }
+
+    private:
+        QLineEdit *IPlineEdit;
+        QSpinBox *portSpinBox;
+};
+
 RISIui::RISIui(QWidget *parent)
     :QMainWindow(parent)
 {
@@ -57,7 +100,7 @@ void RISIui::createToolBars()
     profileToolBar->addAction( createProfileAction );
 
     QToolBar *serversToolBar = addToolBar( tr("Server toolbar") );
-    serversToolBar->addAction( addServerAction );
+    serversToolBar->addAction( connectToIPAction );
 }
 
 void RISIui::createDockWidget( DockWidgetType type )
@@ -121,9 +164,14 @@ void RISIui::setupActions()
 
     exitAction = new QAction ( tr("Exit"), this );
     connect( exitAction, SIGNAL(triggered( bool ) ), this, SLOT(exitActionTriggered()) );
+
     useProfileAction = new QAction ( tr("Use/Load profile"), this );
+
     createProfileAction = new QAction ( tr("Create profile"), this );
-    addServerAction = new QAction ( tr("Add server"), this );
+
+    connectToIPAction = new QAction ( tr("Connect to IP: "), this );
+    connect( connectToIPAction, SIGNAL(triggered( bool )), this , SLOT(connectToIPActTriggered()) );
+
     helpAction = new QAction ( tr("Help"), this );
 
     aboutQtAction = new QAction ( tr("About Qt"), this );
@@ -148,7 +196,7 @@ void RISIui::createMenus()
     profileMenu->addAction( createProfileAction );
 
     QMenu *serversMenu = new QMenu ( tr("Servers") );
-    serversMenu->addAction( addServerAction );
+    serversMenu->addAction( connectToIPAction );
 
     QMenu *viewMenu = createPopupMenu();
     viewMenu->setTitle( tr("View ") );
@@ -205,6 +253,13 @@ void RISIui::hostGameActionTriggered()
         choseGame = hostGameDialog.chosenGame();
         emit chosenGameToHost( choseGame );
     }
+}
+
+void RISIui::connectToIPActTriggered()
+{
+    ConnectToIPDialog IPdilaog;
+    if( IPdilaog.exec() )
+        emit connectToIPSignal( IPdilaog.ip(), IPdilaog.port() );
 }
 
 void RISIui::playerDisconnectedSlot( const QString reason)

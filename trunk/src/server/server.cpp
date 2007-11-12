@@ -72,6 +72,8 @@ void Server::newPlayerConnection()
             QTcpSocket *newConnection = nextPendingConnection();
             ConnectionHandler *newConnectionHandler = new ConnectionHandler( newConnection, this );
             connections[ newConnection ] = newConnectionHandler;
+
+            connect ( newConnectionHandler, SIGNAL(messageArrived(const QString) ), this, SIGNAL(messageArrived(const QString)) );
         }
 }
 

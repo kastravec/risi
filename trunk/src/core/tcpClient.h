@@ -18,44 +18,41 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef RISIAPPLICATION_H
-#define RISIAPPLICATION_H
+#ifndef TCPCLIENT_H
+#define TCPCLIENT_H
 
-#include "ui/risiUI.h"
-#include "server/server.h"
-#include "tcpClient.h"
-#include "protocol.h"
+#include <QTcpSocket>
 
-class RISIapplication: public QObject
+class TcpClient: public QObject
 {
     Q_OBJECT
 
     public:
-        ~RISIapplication();
+        TcpClient( QObject *parent = 0 );
 
-        void initUI();
-        void initServer();
+        void sendMessage(QString msg, qint8 type);
 
-        static RISIapplication* instance();
-
-        void gameListXMLrequest( QStandardItemModel *m );
-        void saveGameListXML( QStandardItemModel *m );
+    private slots:
+        void connectToServer(const QString server, const int port );
+        void readReadyData();
+        void disconnected();
+        void socketErrors( QAbstractSocket::SocketError errors);
+        void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
 
     private:
-        RISIapplication( QObject *parent = 0 );
+        enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
+
         void setupConnections();
-        void parseServerError();
+        void parseMessage( QString msg );
+        void protocolError(ProtocolError error);
 
-        RISIui *risiUI;
-        Server *server;
-        TcpClient *tcpClient;
-        Protocol *protocol;
+        QTcpSocket *client;
+        QString clientError;
+        qint8 messageType;
+        qint32 packetSize;
+        qint32 protocolFormat;
+        qint32 protocolVersion;
 
-        bool isServerRunning;
-        QString serverErrors;
-
-        QIODevice *xmlFile;
-        static RISIapplication* inst;
 };
 
 #endif

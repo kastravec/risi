@@ -18,32 +18,24 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "server/connectionHandler.h"
-#include "server/server.h"
+#include <QHostAddress>
+
+#include "tcpClient.h"
 #include <arpa/inet.h>
 
-/**
- * Default public constructor
- * initializes protocol format and protocol version
- * @param socket
- * @param parent
- */
-ConnectionHandler::ConnectionHandler( QTcpSocket *socket , QObject *parent )
-    :QTcpSocket( parent ), messageType(0), packetSize(-1), protocolFormat(10), protocolVersion(11)
+TcpClient::TcpClient( QObject * parent )
+    :QObject( parent ), client(new QTcpSocket(this) ), clientError(), messageType(0), packetSize(-1), protocolFormat(10), protocolVersion(11)
 {
-    client = socket;
     setupConnections();
 }
 
-ConnectionHandler::~ConnectionHandler()
+void TcpClient::connectToServer(const QString ip, const int port )
 {
-    delete client;
+    QHostAddress hostAddres( ip );
+    client->connectToHost( hostAddres, port );
 }
 
-/**
- * this private functions helps in creating signal-slots connections
- */
-void ConnectionHandler::setupConnections()
+void TcpClient::setupConnections()
 {
     connect( client, SIGNAL( readyRead() ), this, SLOT( readReadyData() ) );
     connect( client, SIGNAL(disconnected()), this, SLOT(disconnected()) );
@@ -52,12 +44,66 @@ void ConnectionHandler::setupConnections()
     connect( client, SIGNAL(error( QAbstractSocket::SocketError )), this,SLOT(socketErrors( QAbstractSocket::SocketError )) ) ;
 
     connect( client, SIGNAL(stateChanged( QAbstractSocket::SocketState ) ), this, SLOT( socketStateChanged(QAbstractSocket::SocketState) ) );
+
 }
 
-/**
- * this slot is called when data are available for reading
- */
-void ConnectionHandler::readReadyData()
+void TcpClient::parseMessage( QString msg )
+{
+    qDebug()<<"message received: " <<msg;
+}
+
+void TcpClient::sendMessage(QString msg, qint8 type)
+{
+    QByteArray packet;
+
+    QDataStream out(&packet, QIODevice::WriteOnly );
+    out<<protocolFormat;
+    out<<protocolVersion;
+
+    out << type;
+    out << msg;
+
+    qint32 size = htonl( packet.size() );
+
+    client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
+    client->write(packet);
+}
+
+void TcpClient::protocolError(ProtocolError error)
+{
+    switch( error )
+    {
+        case InvalidFormat:
+        {
+            qDebug()<<"client:"<<"invalid protocol format";
+            sendMessage("", 'a' );
+            client->flush();
+            client->close();
+            clientError = QString();
+            //FIXME remove this instance once the connection is dead
+            break;
+        }
+        case InvalidVersion:
+        {
+            qDebug()<<"invalid protocol version";
+            sendMessage("", 'b' );
+            client->close();
+            clientError = QString();
+            //FIXME remove this instance once the connection is dead
+            break;
+        }
+        default:
+        {
+            qDebug()<<"unkown protocol error";
+            sendMessage("", 'c' );
+            client->close();
+            clientError = QString();
+            //FIXME remove this instance once the connection is dead
+        }
+    }
+}
+
+void TcpClient::readReadyData()
 {
     while (client->bytesAvailable() > 0)
     {
@@ -117,67 +163,18 @@ void ConnectionHandler::readReadyData()
         QString message;
         inStream >> message;
 
-        emit messageArrived( message );
+        parseMessage( message );
     }
+
 }
 
-void ConnectionHandler::sendMessage(QString msg, qint8 type)
+void TcpClient::disconnected()
 {
-    QByteArray packet;
-
-    QDataStream out(&packet, QIODevice::WriteOnly );
-    out<<protocolFormat;
-    out<<protocolVersion;
-
-    out << type;
-    out << msg;
-
-    qint32 size = htonl( packet.size() );
-
-    qDebug()<<client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
-    qDebug()<<client->write(packet);
+    qDebug()<<"disconnected";
+    //FIXME remove this instance once the connection is dead
 }
 
-void ConnectionHandler::protocolError(ProtocolError error)
-{
-    switch( error )
-    {
-        case InvalidFormat:
-        {
-            qDebug()<<"invalid protocol format";
-            sendMessage("", 'a' );
-            client->flush();
-            client->close();
-            clientError = QString();
-            Server::instance()->playerDisconnected( this, clientError);
-            break;
-        }
-        case InvalidVersion:
-        {
-            qDebug()<<"invalid protocol version";
-            sendMessage("", 'b' );
-            client->close();
-            clientError = QString();
-            Server::instance()->playerDisconnected( this, clientError );
-            break;
-        }
-        default:
-        {
-            qDebug()<<"unkown protocol error";
-            sendMessage("", 'c' );
-            client->close();
-            clientError = QString();
-            Server::instance()->playerDisconnected( this, clientError );
-        }
-    }
-}
-
-void ConnectionHandler::disconnected()
-{
-    Server::instance()->playerDisconnected( this, clientError );
-}
-
-void ConnectionHandler::socketErrors( QAbstractSocket::SocketError errors)
+void TcpClient::socketErrors( QAbstractSocket::SocketError errors)
 {
     switch( errors )
     {
@@ -268,10 +265,9 @@ void ConnectionHandler::socketErrors( QAbstractSocket::SocketError errors)
         default:
             qDebug()<<"some sort of error";
     }
-
 }
 
-void ConnectionHandler::socketStateChanged( QAbstractSocket::SocketState state )
+void TcpClient::socketStateChanged( QAbstractSocket::SocketState state )
 {
     switch( state )
     {
@@ -315,5 +311,4 @@ void ConnectionHandler::socketStateChanged( QAbstractSocket::SocketState state )
     }
 
 }
-
 

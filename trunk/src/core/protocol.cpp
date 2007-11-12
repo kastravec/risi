@@ -18,44 +18,27 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef RISIAPPLICATION_H
-#define RISIAPPLICATION_H
+#include <QDebug>
+#include <QString>
 
-#include "ui/risiUI.h"
-#include "server/server.h"
-#include "tcpClient.h"
 #include "protocol.h"
 
-class RISIapplication: public QObject
+Protocol *Protocol::inst = 0;
+
+Protocol::Protocol()
+    :QObject()
+{}
+
+Protocol *Protocol::instance()
 {
-    Q_OBJECT
+    if( inst == 0 )
+        inst = new Protocol;
 
-    public:
-        ~RISIapplication();
+    return inst;
+}
 
-        void initUI();
-        void initServer();
+void Protocol::parseMessage( const QString msg )
+{
+    qDebug()<<"message received to be parsed: " <<msg;
+}
 
-        static RISIapplication* instance();
-
-        void gameListXMLrequest( QStandardItemModel *m );
-        void saveGameListXML( QStandardItemModel *m );
-
-    private:
-        RISIapplication( QObject *parent = 0 );
-        void setupConnections();
-        void parseServerError();
-
-        RISIui *risiUI;
-        Server *server;
-        TcpClient *tcpClient;
-        Protocol *protocol;
-
-        bool isServerRunning;
-        QString serverErrors;
-
-        QIODevice *xmlFile;
-        static RISIapplication* inst;
-};
-
-#endif

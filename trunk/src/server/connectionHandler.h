@@ -40,6 +40,8 @@ class ConnectionHandler: public QTcpSocket
 
         inline QTcpSocket *socket() const { return client; }
 
+    signals:
+        void messageArrived( const QString msg );
     private slots:
         void readReadyData();
         void disconnected();
@@ -51,7 +53,6 @@ class ConnectionHandler: public QTcpSocket
         enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
 
         void setupConnections();
-        void parseMessage( QString msg );
         void sendMessage(QString msg, qint8 type);
         void protocolError(ProtocolError error);
 
