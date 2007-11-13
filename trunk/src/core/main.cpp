@@ -28,6 +28,8 @@ int main(int argc, char *argv[])
     app.setApplicationName( "RISI script your game" );
     app.setOrganizationName( "RISI script your game" );
 
+//     if( argc > 1 )
+
     RISIapplication::instance()->initUI();
     RISIapplication::instance()->initServer();
 

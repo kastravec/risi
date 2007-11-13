@@ -41,17 +41,20 @@ class RISIapplication: public QObject
         void gameListXMLrequest( QStandardItemModel *m );
         void saveGameListXML( QStandardItemModel *m );
 
+    public slots:
+        void connectToServer( const QString ip, const int port );
+
     private:
         RISIapplication( QObject *parent = 0 );
         void setupConnections();
         void parseServerError();
+        bool isConnectedTo(const QString ip, const int port );
 
         RISIui *risiUI;
         Server *server;
-        TcpClient *tcpClient;
         Protocol *protocol;
+        QList<TcpClient *> tcpClients;
 
-        bool isServerRunning;
         QString serverErrors;
 
         QIODevice *xmlFile;

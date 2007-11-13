@@ -22,8 +22,9 @@
 #define TCPCLIENT_H
 
 #include <QTcpSocket>
+#include <QHostAddress>
 
-class NetworkProtocol;
+#include "globals/networkProtocol.h"
 
 class TcpClient: public QObject
 {
@@ -33,12 +34,14 @@ class TcpClient: public QObject
         TcpClient( QObject *parent = 0 );
 
         void sendMessage(QString msg, qint8 type);
+        QString serverIP() const { return client->peerAddress().toString(); }
+        qint16 serverPort() const { return client->peerPort(); }
+        void connectToServer( const QString server, const int port );
 
     signals:
         void messageArrived( const QString msg );
 
     private slots:
-        void connectToServer( const QString server, const int port );
         void disconnected();
         void protocolError( NetworkProtocol::ProtocolError err );
         void socketErrors( QAbstractSocket::SocketError errors);
