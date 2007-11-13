@@ -26,6 +26,7 @@
 #include <QPushButton>
 #include <QListView>
 #include <QSettings>
+#include <QLabel>
 
 //FIXME THIS CLASS WILL BE REDISGNED
 
@@ -37,6 +38,9 @@ SettingsUI::SettingsUI(QWidget *parent )
 
     QWidget *page = new QWidget(this);//just an initial page for testing
     QVBoxLayout *l = new QVBoxLayout;
+    QLabel *label = new QLabel(tr("This is just for testing. You can however change the port for your server: "), this );
+    label->setWordWrap( true );
+    l->addWidget( label );
     l->addWidget( portSpin );
     page->setLayout( l );
 
@@ -112,6 +116,7 @@ void SettingsUI::applyButtonClicked()
 void SettingsUI::okButtonClicked()
 {
     writeSettings();
+    accept();
 }
 
 void SettingsUI::readSettings()
@@ -134,6 +139,6 @@ void SettingsUI::writeSettings()
     QSettings settings;
 
     settings.beginGroup( "Server" );
-    settings.setValue( "port", 2222 );
+    settings.setValue( "port", portSpin->value() );
     settings.endGroup();
 }

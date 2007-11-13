@@ -18,8 +18,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include <QDataStream>
-
 #include "networkProtocol.h"
+
 
 NetworkProtocol::NetworkProtocol( QObject *parent, QTcpSocket *sock )
     :QObject( parent ), client( sock ), clientError(), messageType(0), packetSize(-1), protocolFormat(10), protocolVersion(11)
@@ -51,7 +51,7 @@ void NetworkProtocol::readData()
             //read the packet size first
             client->read(reinterpret_cast<char*>(&packetSize), sizeof(qint32));
             //changing the byte order for the network to host
-            packetSize = ntohl(packetSize);
+            packetSize = qFromBigEndian( packetSize );
         }
 
         qDebug()<<"3";
@@ -115,3 +115,4 @@ QByteArray NetworkProtocol::createPacket( const QString &msg, qint8 type ) const
 
     return packet;
 }
+

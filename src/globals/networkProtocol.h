@@ -18,8 +18,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <arpa/inet.h>
+#ifndef NETWORKPROTOCOL_H
+#define NETWORKPROTOCOL_H
+
 #include <QTcpSocket>
+#include <qendian.h>
 
 class NetworkProtocol: public QObject
 {
@@ -33,11 +36,7 @@ class NetworkProtocol: public QObject
 
 
         QByteArray createPacket( const QString &msg, qint8 type ) const;
-        qint32 sizeOfPacket( const QByteArray &packet ) const
-        {
-            //this is the size of the packet, the byte order is changed from host to network
-            return htonl( packet.size() );
-        }
+        qint32 sizeOfPacket( const QByteArray &packet ) const { return qToBigEndian( packet.size() );  }
 
     public slots:
         void readData();
@@ -54,3 +53,5 @@ class NetworkProtocol: public QObject
         qint32 protocolFormat;
         qint32 protocolVersion;
 };
+
+#endif

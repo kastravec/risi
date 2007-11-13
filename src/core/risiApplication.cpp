@@ -28,7 +28,7 @@
 RISIapplication* RISIapplication::inst = 0;
 
 RISIapplication::RISIapplication( QObject *parent )
-    :QObject( parent ), xmlFile( new QFile("gameList.xml") ), tcpClient( new TcpClient( this ) ), serverErrors(), protocol( Protocol::instance() )
+    :QObject( parent ), xmlFile( new QFile("gameList.xml") ), tcpClients(), serverErrors(), protocol( Protocol::instance() )
 {
 }
 
@@ -99,8 +99,47 @@ void RISIapplication::setupConnections()
 
     connect(server, SIGNAL(messageArrived(const QString)), protocol, SLOT(parseMessage(const QString)) );
 
-    connect( risiUI, SIGNAL(connectToIPSignal(const QString, const int)), tcpClient, SLOT(connectToServer(const QString, const int)) );
+    connect( risiUI, SIGNAL(connectToIPSignal(const QString, const int)), this, SLOT(connectToServer(const QString, const int)) );
 
+}
+
+/**
+ *
+ * @param ip
+ * @param port
+ */
+void RISIapplication::connectToServer( const QString ip, const int port )
+{
+    if( !isConnectedTo(ip, port) )
+    {
+        tcpClients.append( new TcpClient( this ) );
+        tcpClients.last()->connectToServer( ip, port );
+    }
+    else
+        QMessageBox::warning(0, tr("WARNING ! "), tr("Seems that you are already connected to: ")+ip+" !!" );
+}
+
+/**
+ * this functions checks whether the user is already connected to the given ip and port
+ * @param ip
+ * @param port
+ * @return
+ */
+bool RISIapplication::isConnectedTo(const QString ip, const int port )
+{
+    //checks if there are any connections to any server
+    if( tcpClients.count() > 0 )
+    {
+        //looping through the clients
+        for( int i = 0; i < tcpClients.count(); ++i )
+        {
+            TcpClient *client = tcpClients.at( i );
+            if( client->serverIP() == ip && client->serverPort() == port )
+                return true;
+        }
+    }
+
+    return false;
 }
 
 void RISIapplication::parseServerError()
