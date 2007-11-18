@@ -36,7 +36,14 @@ HttpControler *HttpControler::instance()
     return inst;
 }
 
-void HttpControler::registerProfile( const QString userName, const QString pass)
+bool HttpControler::goOnline( const QString nick )
 {
-
+    nickName = nick;
+    return true;
 }
+
+bool HttpControler::goOffline()
+{
+    return true;
+}
+

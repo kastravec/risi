@@ -16,6 +16,8 @@ QT += network xml opengl \
 
 
 HEADERS += globals/globalEnums.h \
-globals/networkProtocol.h
-SOURCES += globals/networkProtocol.cpp
+globals/networkProtocol.h \
+ globals/initDialog.h
+SOURCES += globals/networkProtocol.cpp \
+ globals/initDialog.cpp
 

@@ -18,38 +18,42 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef PROTOCOL_H
-#define PROTOCOL_H
+#ifndef INITDIALOG_H
+#define INITDIALOG_H
 
-#include <QObject>
-class QString;
+#include <QDialog>
+#include <QSpinBox>
+#include <QLineEdit>
 
-class Protocol : public QObject
+class QRadioButton;
+class QPushButton;
+class QGroupBox;
+
+class InitDialog: public QDialog
 {
     Q_OBJECT
 
     public:
-        static Protocol*instance();
+        InitDialog ( QWidget *parent = 0 );
 
-        enum MessageType {
-                            Game = 'g',
-                            Chat = 'c',
-                            NickName = 'n',
-                            HostRequest = 'h',
-                            HostCancel = 'l',
-                            JoinGame = 'j',
-                            LeaveGame = 'a'
-                         };
-    public slots:
-        void parseMessage( const QString msg, const qint8 msgType );
+        const QString nickName() const { return nickNameLineEdit->text(); }
+        const int serverPort() const { return portSpinBox->value(); }
 
-    signals:
-        void updateNickName( const QString nick );
+    private slots:
+        void advancedOptionsTriggered();
+        void okButtonPressed();
 
     private:
-        Protocol();
-        static Protocol *inst;
+        void setupUI();
+        void setupConnections();
+        void writeSettings();
+
+        QGroupBox *advancedOptionsWidget;
+        QLineEdit *nickNameLineEdit;
+        QSpinBox *portSpinBox;
+        QRadioButton *advancedOptionsButton;
+        QPushButton *okButton;
+        QPushButton *cancelButton;
 };
 
 #endif
-

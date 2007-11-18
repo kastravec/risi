@@ -37,8 +37,47 @@ Protocol *Protocol::instance()
     return inst;
 }
 
-void Protocol::parseMessage( const QString msg )
+/**
+ *
+ * @param msg
+ * @param msgType
+ */
+void Protocol::parseMessage( const QString msg, const qint8 msgType )//TODO protocol
 {
-    qDebug()<<"message received to be parsed: " <<msg;
+    qDebug()<<"message received to be parsed: " <<msg <<"type: " <<msgType;
+
+    switch( msgType )
+    {
+        case Game:
+        {
+            break;
+        }
+        case Chat:
+        {
+            break;
+        }
+        case NickName:
+        {
+            emit updateNickName( msg );//FIXME ??
+            break;
+        }
+        case HostRequest:
+        {
+            break;
+        }
+        case HostCancel:
+        {
+            break;
+        }
+        case JoinGame:
+        {
+            break;
+        }
+        case LeaveGame:
+        {
+            break;
+        }
+    }
+
 }
 

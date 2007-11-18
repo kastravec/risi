@@ -42,7 +42,7 @@ class NetworkProtocol: public QObject
         void readData();
 
     signals:
-        void messageReady( const QString msg);
+        void messageReady( const QString msg, const qint8 msgType );
         void networkProtocolError( NetworkProtocol::ProtocolError err );
 
     private:

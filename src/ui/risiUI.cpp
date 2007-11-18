@@ -23,7 +23,9 @@
 #include <QToolBar>
 #include <QApplication>
 #include <QMessageBox>
+#include <QStatusBar>
 #include <QDebug>
+#include <QSettings>
 
 #include "core/risiApplication.h"
 #include "settingsUI.h"
@@ -74,7 +76,7 @@ class ConnectToIPDialog: public QDialog
 };
 
 RISIui::RISIui(QWidget *parent)
-    :QMainWindow(parent)
+    :QMainWindow(parent), model( new QStandardItemModel ), nickNameCombobox( new QComboBox ), onlineStatus( false), appStatus( new QLabel( tr("Server not ready! "), this ) )
 {
     resize( 800,600);
     setAnimated(true);
@@ -83,24 +85,30 @@ RISIui::RISIui(QWidget *parent)
     createDockWidget(Bottom);
     createDockWidget(Games);
     setupActions();
-    createToolBars();
     createMenus();
-
-    model = new QStandardItemModel;
+    createToolBars();
+    createStatusBar();
+    readSettings();
 }
 
+/**
+ * creates the toolbars
+ */
 void RISIui::createToolBars()
 {
     QToolBar *gameToolBar = addToolBar( tr("Game toolbar") );
     gameToolBar->addAction( hostGameAction );
-    gameToolBar->addAction( quitGameAction );
-
-    QToolBar *profileToolBar = addToolBar ( tr("Profile toolbar") );
-    profileToolBar->addAction( useProfileAction );
-    profileToolBar->addAction( createProfileAction );
 
     QToolBar *serversToolBar = addToolBar( tr("Server toolbar") );
     serversToolBar->addAction( connectToIPAction );
+
+    QToolBar *goOnlineToolBar = addToolBar ( tr("Internet toolbar") );
+    nickNameCombobox->setAutoCompletion( true );
+    nickNameCombobox->setEditable( true );
+    nickNameCombobox->setMaxVisibleItems( 5 );
+    goOnlineToolBar->addWidget( new QLabel( tr("Nickname:"), this ) );
+    goOnlineToolBar->addWidget( nickNameCombobox );
+
 }
 
 void RISIui::createDockWidget( DockWidgetType type )
@@ -149,34 +157,68 @@ void RISIui::createCentralWidget()
     setCentralWidget(centralWidget);
 }
 
+void RISIui::createStatusBar()
+{
+    QStatusBar *statBar = statusBar();
+
+    QString status = tr("Internet status: ");
+    if( onlineStatus )
+        status += tr("ONLINE");
+    else
+        status += tr("OFFLINE");
+
+    onlineStatusLabel = new QLabel( status, this );
+    statBar->addPermanentWidget( onlineStatusLabel );
+    appStatus->setText( tr("Ready.") );
+    statBar->addWidget( appStatus );
+}
+
+/**
+ * creates and sets up the actions
+ */
 void RISIui::setupActions()
 {
     addRemoveGameAction = new QAction ( tr("Add/Remove games"), this );
+    addRemoveGameAction->setStatusTip( tr("Add or remove your games to the application ! ") );
     connect( addRemoveGameAction, SIGNAL(triggered( bool )), this, SLOT(addRemoveGameActTriggered()));
 
     hostGameAction = new QAction ( tr("Host game"), this );
+    hostGameAction->setStatusTip( tr("Host a game for the rest of the network players !") );
     connect( hostGameAction, SIGNAL(triggered( bool )), this, SLOT(hostGameActionTriggered()) );
 
     settingsAction = new QAction ( tr("Settings"), this );
+    settingsAction->setStatusTip( tr("Change settings of RISI !") );
     connect(settingsAction, SIGNAL(triggered( bool )), this, SLOT(settingsActionTriggered()) );
 
-    quitGameAction = new QAction ( tr("Quit game"), this );
-
     exitAction = new QAction ( tr("Exit"), this );
+    exitAction->setStatusTip( tr(" Exit from RISI !") );
     connect( exitAction, SIGNAL(triggered( bool ) ), this, SLOT(exitActionTriggered()) );
 
-    useProfileAction = new QAction ( tr("Use/Load profile"), this );
-
-    createProfileAction = new QAction ( tr("Create profile"), this );
-
-    connectToIPAction = new QAction ( tr("Connect to IP: "), this );
+    connectToIPAction = new QAction ( tr("Connect to IP "), this );
+    connectToIPAction->setStatusTip( tr("Connect to an IP address !") );
     connect( connectToIPAction, SIGNAL(triggered( bool )), this , SLOT(connectToIPActTriggered()) );
 
-    helpAction = new QAction ( tr("Help"), this );
-
     aboutQtAction = new QAction ( tr("About Qt"), this );
+    aboutQtAction->setStatusTip( tr(" About the Qt framework !") );
     connect( aboutQtAction, SIGNAL(triggered( bool )), qApp, SLOT(aboutQt()) );
 
+    serverInfoAction = new QAction( tr("Server info"), this );
+    serverInfoAction->setStatusTip( tr("Information about the server running ! ") );
+    connect( serverInfoAction, SIGNAL(triggered( bool )), this, SLOT(serverInfoActionTriggered()) );
+
+    QString status;
+    if ( onlineStatus )
+        status = tr("go offline!");
+    else
+        status = tr("go online!");
+    onlineAction = new QAction ( status, this );
+    onlineAction->setCheckable( true );
+    onlineAction->setStatusTip( tr("Go online !") );
+    onlineAction->setChecked( onlineStatus );
+    connect( onlineAction, SIGNAL(triggered( bool ) ), this, SLOT(onlineActionTriggered()) );
+
+    helpAction = new QAction ( tr("Help"), this );
+    quitGameAction = new QAction ( tr("Quit game"), this );
     aboutRisiAction = new QAction ( tr("About risi"), this );
 }
 
@@ -186,17 +228,13 @@ void RISIui::createMenus()
 
     QMenu *gameMenu = new QMenu ( tr("&Game"), mainMenuBar);
     gameMenu->addAction( addRemoveGameAction );
+    gameMenu->addAction( connectToIPAction );
     gameMenu->addAction( hostGameAction );
+    gameMenu->addAction( onlineAction );
     gameMenu->addAction ( settingsAction );
+    gameMenu->addAction( serverInfoAction );
     gameMenu->addAction( quitGameAction );
     gameMenu->addAction( exitAction );
-
-    QMenu *profileMenu = new QMenu ( tr("Profile"), mainMenuBar);
-    profileMenu->addAction( useProfileAction );
-    profileMenu->addAction( createProfileAction );
-
-    QMenu *serversMenu = new QMenu ( tr("Servers") );
-    serversMenu->addAction( connectToIPAction );
 
     QMenu *viewMenu = createPopupMenu();
     viewMenu->setTitle( tr("View ") );
@@ -207,8 +245,6 @@ void RISIui::createMenus()
     helpMenu->addAction ( aboutRisiAction );
 
     mainMenuBar->addMenu(gameMenu);
-    mainMenuBar->addMenu( profileMenu );
-    mainMenuBar->addMenu( serversMenu );
     mainMenuBar->addMenu( viewMenu );
     mainMenuBar->addMenu(helpMenu);
 }
@@ -249,10 +285,23 @@ void RISIui::hostGameActionTriggered()
     HostGameDialog hostGameDialog( model, this );
     int result = hostGameDialog.exec();
     if( result == QDialog::Accepted )
-    {
-        choseGame = hostGameDialog.chosenGame();
-        emit chosenGameToHost( choseGame );
-    }
+        emit chosenGameToHost( hostGameDialog.chosenGame() );
+}
+
+void RISIui::onlineActionTriggered()
+{
+    onlineStatus = onlineAction->isChecked();
+
+    emit goOnlineSignal( nickNameCombobox->currentText(), onlineStatus );
+
+    QString status;
+    if( onlineStatus )
+        status = tr("go offline!");
+    else
+        status = tr("go online!");
+
+    onlineAction->setText( status );
+    onlineAction->setChecked( onlineStatus );
 }
 
 void RISIui::connectToIPActTriggered()
@@ -262,7 +311,93 @@ void RISIui::connectToIPActTriggered()
         emit connectToIPSignal( IPdilaog.ip(), IPdilaog.port() );
 }
 
+void RISIui::aboutRisiActionTriggered()
+{
+
+}
+
+/**
+ *
+ */
+void RISIui::serverInfoActionTriggered()
+{
+    QDialog dialog;
+    dialog.setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
+    dialog.setWindowTitle( tr("Server info: ") );
+
+    QVBoxLayout *vlayout = new QVBoxLayout;
+    vlayout->addWidget( new QLabel( tr("Info about your server: "), this ), Qt::AlignHCenter);
+
+    QList < QString> addresses = RISIapplication::instance()->broadcastIPaddresses();
+    QString ipAddresses;
+    for( int i = 0; i < addresses.count(); ++i )
+    {
+        ipAddresses += addresses.at( i );
+        if( i != addresses.count() - 1 )
+            ipAddresses += "\n";
+    }
+
+    QString port = QString::number( RISIapplication::instance()->serverPort() );
+    QString nrOfPlayers = QString::number( RISIapplication::instance()->connectedPlayers() );
+
+    QGridLayout *gridLayout = new QGridLayout;
+    gridLayout->addWidget( new QLabel( tr("Server IP: "), &dialog ), 0, 0, Qt::AlignTop );
+    gridLayout->addWidget( new QLabel( ipAddresses, this ), 0, 1, Qt::AlignTop );
+    gridLayout->addWidget( new QLabel( tr("Port: "), this ), 1, 0 );
+    gridLayout->addWidget( new QLabel( port, this ), 1, 1 );
+    gridLayout->addWidget( new QLabel( tr("Connected players: "), this ), 2, 0 );
+    gridLayout->addWidget( new QLabel( nrOfPlayers, this ), 2, 1 );
+
+    QPushButton *okB = new QPushButton( tr("ok"), this );
+    connect( okB, SIGNAL(pressed()), &dialog, SLOT(accept() ) );
+
+    vlayout->addLayout( gridLayout );
+    vlayout->addWidget( okB );
+
+    dialog.setLayout( vlayout );
+    dialog.setFixedSize( dialog.sizeHint() );
+    dialog.exec();
+}
+
+void RISIui::updateOnlineStatusSlot( const bool online )
+{
+    onlineStatus = online;
+    onlineAction->setChecked( onlineStatus );
+
+    QString status;
+    QString label;
+    if( onlineStatus )
+    {
+        label = tr("Internet status: ONLINE");
+        status = tr("go offline!");
+    }
+    else
+    {
+        label = tr("Internet status: OFFLINE");
+        status = tr("go online!");
+    }
+
+    onlineAction->setText( status );
+    onlineAction->setChecked( onlineStatus );
+    qDebug()<<"label:"<<label;
+    onlineStatusLabel->setText( label );
+}
+
 void RISIui::playerDisconnectedSlot( const QString reason)
 {
     QMessageBox::warning ( this, tr("Player disconnected: "), tr(" Player disconnected due to: ") + reason );
 }
+
+void RISIui::readSettings()
+{
+    QSettings settings;
+    settings.beginGroup( "General" );
+    nickNameCombobox->addItem( settings.value( "nickname" ).toString() );
+    settings.endGroup();
+}
+
+void RISIui::writeSettings()
+{
+}
+
+

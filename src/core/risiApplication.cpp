@@ -21,6 +21,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QSettings>
+#include <QNetworkInterface>
 
 #include "gameListXML.h"
 #include "risiApplication.h"
@@ -28,7 +29,7 @@
 RISIapplication* RISIapplication::inst = 0;
 
 RISIapplication::RISIapplication( QObject *parent )
-    :QObject( parent ), xmlFile( new QFile("gameList.xml") ), tcpClients(), serverErrors(), protocol( Protocol::instance() )
+    :QObject( parent ), xmlFile( new QFile("gameList.xml") ), tcpClients(), serverErrors(), protocol( Protocol::instance() ), http ( HttpControler::instance() )
 {
 }
 
@@ -39,6 +40,9 @@ RISIapplication* RISIapplication::instance()
     return inst;
 }
 
+/**
+ * starts the server
+ */
 void RISIapplication::initServer()
 {
     server = Server::instance();
@@ -55,9 +59,11 @@ void RISIapplication::initServer()
 
     if( ok )
     {
-        Server::instance()->listen(QHostAddress::Any, port );
-        if( !Server::instance()->isListening() )
+        server->listen(QHostAddress::Any, port );
+        if( !server->isListening() )
             parseServerError();
+        else
+            emit updateServerStatus( server->isListening() );
     }
     else
         QMessageBox::warning(0, tr("Error: "), tr("Internal application error due to conversion from QVariant to integer! Please, try restart the application and submit a bug report ! ") );
@@ -77,6 +83,9 @@ RISIapplication::~RISIapplication()
     server->close();
     delete server;
     delete protocol;
+
+    delete Server::instance();
+    delete Protocol::instance();
 }
 
 void RISIapplication::gameListXMLrequest( QStandardItemModel *m )
@@ -97,10 +106,40 @@ void RISIapplication::setupConnections()
 
     connect( server, SIGNAL(playerDisconnectedSignal(const QString)), risiUI, SLOT(playerDisconnectedSlot(const QString) ) );
 
-    connect(server, SIGNAL(messageArrived(const QString)), protocol, SLOT(parseMessage(const QString)) );
+    connect(server, SIGNAL(messageArrived(const QString, const qint8)), protocol, SLOT(parseMessage(const QString, const qint8)) );
 
     connect( risiUI, SIGNAL(connectToIPSignal(const QString, const int)), this, SLOT(connectToServer(const QString, const int)) );
 
+    connect( risiUI, SIGNAL(goOnlineSignal(const QString, const bool)), this, SLOT(goOnlineSlot(const QString, const bool)) );
+
+}
+
+/**
+ * when a player is disconnected this function is called, so this client will be removed from the list
+ * and notifying the other users
+ * @param client
+ */
+void RISIapplication::playerDisconnected( TcpClient *client )
+{
+    QString error = client->lastError();
+
+    int instances = tcpClients.removeAll( client );
+
+    if( instances != 0 )
+        QMessageBox::warning(0, tr("Warning ! "), tr(" Player disconnected due to: ")+error+" !" );
+}
+
+void RISIapplication::goOnlineSlot( const QString nickName, const bool onlineStatus )
+{
+    bool status;
+    if( onlineStatus )
+        status = http->goOnline( nickName );
+    else
+        status = http->goOffline();
+
+    emit updateOnlineStatus( status );
+
+    server->updateOnlineStatus( status );
 }
 
 /**
@@ -140,6 +179,28 @@ bool RISIapplication::isConnectedTo(const QString ip, const int port )
     }
 
     return false;
+}
+
+/**
+ * iterates through all the available network interfaces on the system
+ * and returns a list of IP address
+ * @return
+ */
+QList <QString> RISIapplication::broadcastIPaddresses() const
+{
+        QList <QHostAddress> hostAddresses = QNetworkInterface::allAddresses();
+        QList < QString > addresses;
+        QHostAddress networkAddress(QHostAddress::Broadcast);
+
+        for( int i=0; i<hostAddresses.count(); ++i)
+        {
+            QHostAddress address = hostAddresses.at(i);
+
+            if( address.protocol() ==  networkAddress.protocol() )
+               addresses.append( address.toString() );
+        }
+
+        return addresses;
 }
 
 void RISIapplication::parseServerError()

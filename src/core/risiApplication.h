@@ -23,6 +23,7 @@
 
 #include "ui/risiUI.h"
 #include "server/server.h"
+#include "http/httpControler.h"
 #include "tcpClient.h"
 #include "protocol.h"
 
@@ -40,9 +41,19 @@ class RISIapplication: public QObject
 
         void gameListXMLrequest( QStandardItemModel *m );
         void saveGameListXML( QStandardItemModel *m );
+        void playerDisconnected( TcpClient *client );
+        QList <QString> broadcastIPaddresses() const;
+        const qint16 serverPort() { return server->serverPort(); }
+        const int connectedPlayers() { return server->connectedPlayers(); }
 
     public slots:
         void connectToServer( const QString ip, const int port );
+        void goOnlineSlot( const QString nickName, const bool onlineStatus );
+//         void playerConnected();
+
+    signals:
+        void updateOnlineStatus( const bool onlineStatus );
+        void updateServerStatus( const bool serverStatus );
 
     private:
         RISIapplication( QObject *parent = 0 );
@@ -53,6 +64,7 @@ class RISIapplication: public QObject
         RISIui *risiUI;
         Server *server;
         Protocol *protocol;
+        HttpControler *http;
         QList<TcpClient *> tcpClients;
 
         QString serverErrors;
