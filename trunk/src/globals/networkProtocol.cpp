@@ -90,13 +90,13 @@ void NetworkProtocol::readData()
         }
         qDebug()<<"8";
         //read protocol header: the type of message
-        inStream >> messageType;//TODO consider message types
+        inStream >> messageType;
 
         //read message
         QString message;
         inStream >> message;
 
-        emit messageReady( message );
+        emit messageReady( message, messageType );
     }
 }
 

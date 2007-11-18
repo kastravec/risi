@@ -20,19 +20,27 @@
 
 #include <QApplication>
 #include "risiApplication.h"
+#include "globals/initDialog.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    int returnCode;
 
     app.setApplicationName( "RISI script your game" );
     app.setOrganizationName( "RISI script your game" );
 
-//     if( argc > 1 )
+    InitDialog initDialog;
+    returnCode = initDialog.exec();
 
-    RISIapplication::instance()->initUI();
-    RISIapplication::instance()->initServer();
+    if( returnCode == QDialog::Accepted )
+    {
+        RISIapplication::instance()->initUI();
+        RISIapplication::instance()->initServer();
+        returnCode = app.exec();
+        RISIapplication::instance()->deleteLater();
+    }
 
-    return app.exec();
+    return returnCode;
 }
 

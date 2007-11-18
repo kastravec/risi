@@ -40,13 +40,18 @@ class RISIui: public QMainWindow
         void addRemoveGameActTriggered();
         void hostGameActionTriggered();
         void connectToIPActTriggered();
+        void onlineActionTriggered();
+        void aboutRisiActionTriggered();
+        void serverInfoActionTriggered();
         void playerDisconnectedSlot( const QString reason);
+        void updateOnlineStatusSlot( const bool online );
 
     signals:
-        void chosenGameToHost( const QString &gameName );
+        void chosenGameToHost( const QString gameName );
         void saveGameListXMLRequest( QStandardItemModel *m );
         void gameListXMLrequest( QStandardItemModel *m );
         void connectToIPSignal( const QString ip, const int port );
+        void goOnlineSignal( const QString nickName, const bool online );
 
     protected:
         void closeEvent( QCloseEvent *);
@@ -58,19 +63,23 @@ class RISIui: public QMainWindow
         void setupActions();
         void createDockWidget(DockWidgetType type) ;
         void createCentralWidget();
+        void createStatusBar();
+        void readSettings();
+        void writeSettings();
 
         ChatUI *chatUI;
         GameListUI *gameListUI;
         QTabWidget *gameWidgetContainer;
+        QComboBox *nickNameCombobox;
 
         QAction *hostGameAction;
         QAction *settingsAction;
         QAction *addRemoveGameAction;
         QAction *quitGameAction;
+        QAction *serverInfoAction;
         QAction *exitAction;
 
-        QAction *useProfileAction;
-        QAction *createProfileAction;
+        QAction *onlineAction;
 
         QAction *connectToIPAction;
 
@@ -78,7 +87,9 @@ class RISIui: public QMainWindow
         QAction *aboutQtAction;
         QAction *aboutRisiAction;
 
-        QString choseGame; //TODO do i need this here??
+        bool onlineStatus;
+        QLabel *appStatus;
+        QLabel *onlineStatusLabel;
         QStandardItemModel *model;//FIXME this should be QAbstractItemModel
 };
 

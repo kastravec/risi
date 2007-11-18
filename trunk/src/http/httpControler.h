@@ -29,13 +29,16 @@ class HttpControler: public QObject
 
     public:
         static HttpControler *instance();
-        void registerProfile( const QString userName, const QString pass);
+        bool goOnline( const QString nick );
+        bool goOffline();
 
     private:
         HttpControler( QObject *parent = 0 );
         static HttpControler *inst;
 
         QHttp http;
+        QString errors;
+        QString nickName;
 };
 
 #endif

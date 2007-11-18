@@ -36,6 +36,7 @@ class TcpClient: public QObject
         void sendMessage(QString msg, qint8 type);
         QString serverIP() const { return client->peerAddress().toString(); }
         qint16 serverPort() const { return client->peerPort(); }
+        QString lastError() const { return clientError; }
         void connectToServer( const QString server, const int port );
 
     signals:

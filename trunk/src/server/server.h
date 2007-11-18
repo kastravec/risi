@@ -36,14 +36,16 @@ class Server : public QTcpServer
         QList <Game *> allHostedGames() const { return hostedGames; }
         QList <Game *> allGames() const { return games; }
 
+        int connectedPlayers() const { return connections.count(); }
         void playerDisconnected( ConnectionHandler *handler, QString error );
+        void updateOnlineStatus( const bool online );
 
     public slots:
         void hostGame(const QString &gameName);
 
     signals:
         void playerDisconnectedSignal(const QString msg);
-        void messageArrived( const QString msg );
+        void messageArrived( const QString msg, const qint8 msgType );
 
     private slots:
         void newPlayerConnection();
@@ -59,6 +61,8 @@ class Server : public QTcpServer
 
         void readSettings();
         void writeSettings();
+
+        bool onlineStatus;
 };
 
 #endif

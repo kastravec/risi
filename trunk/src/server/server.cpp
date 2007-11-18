@@ -29,7 +29,7 @@ Server *Server::inst = 0;
  * @param parent
  */
 Server::Server( QObject *parent )
-    :QTcpServer(parent), hostedGames(), connections(), games()
+    :QTcpServer(parent), hostedGames(), connections(), games(), onlineStatus( false )
 {
     connect( this, SIGNAL(newConnection()), this, SLOT(newPlayerConnection()) );
 }
@@ -44,6 +44,11 @@ Server * Server::instance()
         inst = new Server;
 
     return inst;
+}
+
+void Server::updateOnlineStatus( const bool online )
+{
+
 }
 
 void Server::readSettings()
@@ -76,7 +81,7 @@ void Server::newPlayerConnection()
             connections[ newConnection ] = newConnectionHandler;
 
             //for every message arrived, the connection handler will emit a signal to notify server to emit its signal
-            connect ( newConnectionHandler, SIGNAL(messageArrived(const QString) ), this, SIGNAL(messageArrived(const QString)) );
+            connect ( newConnectionHandler, SIGNAL(messageArrived(const QString, const qint8) ), this, SIGNAL(messageArrived(const QString, const qint8)) );
         }
 }
 

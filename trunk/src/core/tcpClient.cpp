@@ -22,8 +22,7 @@
 
 #include "tcpClient.h"
 #include "globals/networkProtocol.h"
-
-#include <arpa/inet.h>
+#include "risiApplication.h"
 
 TcpClient::TcpClient( QObject * parent )
     :QObject( parent ), client(new QTcpSocket(this) ), networkProtocol( this, client ), clientError()
@@ -71,8 +70,8 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
             sendMessage("", 'a' );
             client->flush();
             client->close();
-            clientError = QString();
-            //FIXME remove this instance once the connection is dead
+            clientError = QString(" Invalid network protocol format ! ");
+            RISIapplication::instance()->playerDisconnected( this );
             break;
         }
         case NetworkProtocol::InvalidVersion:
@@ -80,8 +79,8 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
             qDebug()<<"invalid protocol version";
             sendMessage("", 'b' );
             client->close();
-            clientError = QString();
-            //FIXME remove this instance once the connection is dead
+            clientError = QString("Invalid network protocol version ! ");
+            RISIapplication::instance()->playerDisconnected( this );
             break;
         }
         default:
@@ -89,8 +88,8 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
             qDebug()<<"unkown protocol error";
             sendMessage("", 'c' );
             client->close();
-            clientError = QString();
-            //FIXME remove this instance once the connection is dead
+            clientError = QString("Unknown network protocol ! ");
+            RISIapplication::instance()->playerDisconnected( this );
         }
     }
 }
