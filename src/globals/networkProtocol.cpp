@@ -28,7 +28,7 @@ NetworkProtocol::NetworkProtocol( QObject *parent, QTcpSocket *sock )
 
 NetworkProtocol::~NetworkProtocol()
 {
-    delete client;
+//     delete client;
 }
 
 /**

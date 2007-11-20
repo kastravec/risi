@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci   *
- *   psaraci@gmail.com   *
+ *   Copyright (C) 2007 by Petref Saraci                                   *
+ *   psaraci@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,14 +18,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QDialog>
-#include "core/profile.h"
+#include <QTcpSocket>
 
-class ProfileUI: public QDialog
+#include "player.h"
+
+Player::Player( QTcpSocket *client, QObject *parent )
+	:QObject( parent ), tcpSocket( client )
 {
-    public:
-        ProfileUI(QWidget *parent = 0);
-
-    private:
-        QList <Profile> *profiles;
-};
+}
