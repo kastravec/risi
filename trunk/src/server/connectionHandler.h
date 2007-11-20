@@ -31,7 +31,7 @@
    b = Invalid protocolVersion
    c = Invalid protocol
  */
-class ConnectionHandler: public QTcpSocket
+class ConnectionHandler: public QObject
 {
     Q_OBJECT
 

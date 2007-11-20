@@ -28,7 +28,7 @@
  * @param parent
  */
 ConnectionHandler::ConnectionHandler( QTcpSocket *socket , QObject *parent )
-    :QTcpSocket( parent ), client(socket), networkProtocol(this, client), clientError()
+    :QObject( parent ), client(socket), networkProtocol(this, client), clientError()
 {
     setupConnections();
 }

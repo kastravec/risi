@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci   *
- *   psaraci@gmail.com   *
+ *   Copyright (C) 2007 by Petref Saraci                                   *
+ *   psaraci@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,23 +18,18 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QList>
-#include <QMap>
-#include <QString>
+#ifndef PLAYER_H
+#define PLAYER_H
 
-class Profile
+class QTcpSocket;
+
+class Player : public QObject
 {
-    public:
-        Profile();
-
-        inline QString name() const { return profileName; }
-        inline QString password() const { return profilePass; }
-        inline QList <QString> playedGames() const { return allPlayedGames; }
-        inline QMap <int, QString> scores() const { return allScores; }
+	public:
+		Player( QTcpSocket *client, QObject *parent = 0 );
 
     private:
-        QString profileName;
-        QString profilePass;
-        QList <QString> allPlayedGames;
-        QMap <int, QString> allScores;
+        QTcpSocket * tcpSocket;
 };
+
+#endif
