@@ -22,8 +22,7 @@
 #define SERVER_H
 
 #include <QTcpServer>
-
-#include "connectionHandler.h"
+#include "core/player.h"
 #include "core/game.h"
 
 class Server : public QTcpServer
@@ -36,8 +35,8 @@ class Server : public QTcpServer
         QList <Game *> allHostedGames() const { return hostedGames; }
         QList <Game *> allGames() const { return games; }
 
-        int connectedPlayers() const { return connections.count(); }
-        void playerDisconnected( ConnectionHandler *handler, QString error );
+        int numberOfConnectedPlayers() const { return connectedPlayers.count(); }
+        void playerDisconnected( Player *player, const QString &error );
         void updateOnlineStatus( const bool online );
 
     public slots:
@@ -48,14 +47,14 @@ class Server : public QTcpServer
         void messageArrived( const QString msg, const qint8 msgType );
 
     private slots:
-        void newPlayerConnection();
+        void newConnectionSlot();
 
     private:
         Server( QObject *parent = 0);
 
         QList <Game *> hostedGames;
         QList <Game *> games;
-        QMap <QTcpSocket *, ConnectionHandler *> connections;
+        QMap <QTcpSocket *, Player *> connectedPlayers;
 
         static Server *inst;
 

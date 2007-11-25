@@ -39,13 +39,15 @@ class ConnectionHandler: public QObject
         ConnectionHandler( QTcpSocket *sock = 0, QObject *parent = 0);
         ~ConnectionHandler();
 
-        inline QTcpSocket *socket() const { return client; }
+        inline const QTcpSocket *socket() { return client; }
+        const QString &lastError() const { return clientError; }
 
     signals:
-        void messageArrived( const QString msg );
+        void messageArrived( const QString msg, const qint8 msgType );
+        void disconnectMe();
 
     private slots:
-        void disconnected();
+        void dataArrived();
         void networkProtocolErrorSlot( NetworkProtocol::ProtocolError err );
         void socketErrors( QAbstractSocket::SocketError errors);//FIXME do i need this?
         void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
@@ -55,8 +57,6 @@ class ConnectionHandler: public QObject
         void sendMessage(QString msg, qint8 type);
 
         QTcpSocket *client;
-        NetworkProtocol networkProtocol;
-
         QString clientError;
 };
 

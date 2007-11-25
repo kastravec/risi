@@ -18,11 +18,29 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QTcpSocket>
+#ifndef PLAYER_H
+#define PLAYER_H
 
-#include "player.h"
+#include "server/connectionHandler.h"
 
-Player::Player( QTcpSocket *client, QObject *parent )
-	:QObject( parent ), tcpSocket( client )
+class Player : public QObject
 {
-}
+    Q_OBJECT
+
+	public:
+		Player( QTcpSocket *client, QObject *parent = 0 );
+
+        const QTcpSocket * connectionSocket() { return connectionHandler.socket(); }
+        const QString &nickName() const { return nick; }
+
+    private slots:
+        void disconnected();
+
+    private:
+        void setupConnections();
+
+        ConnectionHandler connectionHandler;
+        QString nick;
+};
+
+#endif

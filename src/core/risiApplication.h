@@ -44,7 +44,7 @@ class RISIapplication: public QObject
         void playerDisconnected( TcpClient *client );
         QList <QString> broadcastIPaddresses() const;
         const qint16 serverPort() { return server->serverPort(); }
-        const int connectedPlayers() { return server->connectedPlayers(); }
+        const int numberOfConnectedPlayers() { return server->numberOfConnectedPlayers(); }
 
     public slots:
         void connectToServer( const QString ip, const int port );

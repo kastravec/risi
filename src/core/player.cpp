@@ -18,18 +18,27 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#include "core/protocol.h"
+#include "player.h"
+#include "server/server.h"
 
-class QTcpSocket;
-
-class Player : public QObject
+Player::Player( QTcpSocket *client, QObject *parent )
+	:QObject( parent ), connectionHandler( client, this ), nick( "player"+QString::number( client->socketDescriptor()*2 ) )
 {
-	public:
-		Player( QTcpSocket *client, QObject *parent = 0 );
+    setupConnections();
+}
 
-    private:
-        QTcpSocket * tcpSocket;
-};
+void Player::setupConnections()
+{
+    connect( &connectionHandler, SIGNAL(messageArrived(const QString, const qint8)), Protocol::instance(), SLOT(parseMessage(const QString, const qint8)) );
 
-#endif
+    connect( &connectionHandler, SIGNAL(disconnectMe()), this, SLOT(disconnected()) );
+}
+
+void Player::disconnected()
+{
+    qDebug()<<"disconnected slot" <<connectionHandler.lastError();
+
+    Server::instance()->playerDisconnected( this, connectionHandler.lastError() );
+}
+

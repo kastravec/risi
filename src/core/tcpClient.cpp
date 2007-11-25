@@ -18,14 +18,11 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QHostAddress>
-
 #include "tcpClient.h"
-#include "globals/networkProtocol.h"
 #include "risiApplication.h"
 
 TcpClient::TcpClient( QObject * parent )
-    :QObject( parent ), client(new QTcpSocket(this) ), networkProtocol( this, client ), clientError()
+    :QObject( parent ), client(new QTcpSocket(this) ), clientError()
 {
     setupConnections();
 }
@@ -38,9 +35,9 @@ void TcpClient::connectToServer(const QString ip, const int port )
 
 void TcpClient::setupConnections()
 {
-    connect( client, SIGNAL( readyRead() ), &networkProtocol, SLOT( readData() ) );
-    connect( &networkProtocol, SIGNAL(messageReady(const QString)), this, SIGNAL(messageArrived(const QString)) );
-    connect( &networkProtocol, SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError)), this, SLOT(protocolError(NetworkProtocol::ProtocolError) ) );
+    connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
+    connect( NetworkProtocol::instance(), SIGNAL(messageReady(const QString, const qint8 )), this, SIGNAL(messageArrived(const QString, const qint8 )) );
+    connect( NetworkProtocol::instance(), SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError)), this, SLOT(protocolError(NetworkProtocol::ProtocolError) ) );
 
     connect( client, SIGNAL(disconnected()), this, SLOT(disconnected()) );
 
@@ -53,8 +50,8 @@ void TcpClient::setupConnections()
 
 void TcpClient::sendMessage(QString msg, qint8 type)
 {
-    QByteArray packet = networkProtocol.createPacket( msg, type );
-    qint32 size = networkProtocol.sizeOfPacket( packet );
+    QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type );
+    qint32 size = NetworkProtocol::instance()->sizeOfPacket( packet );
 
     client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
     client->write(packet);
@@ -92,6 +89,11 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
             RISIapplication::instance()->playerDisconnected( this );
         }
     }
+}
+
+void TcpClient::dataArrived()
+{
+    NetworkProtocol::instance()->readData( client );
 }
 
 void TcpClient::disconnected()
