@@ -86,6 +86,7 @@ RISIapplication::~RISIapplication()
 
     delete Server::instance();
     delete Protocol::instance();
+    delete NetworkProtocol::instance();
 }
 
 void RISIapplication::gameListXMLrequest( QStandardItemModel *m )

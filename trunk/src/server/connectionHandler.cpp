@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include "server/connectionHandler.h"
-#include "server/server.h"
 
 /**
  * Default public constructor
@@ -28,14 +27,14 @@
  * @param parent
  */
 ConnectionHandler::ConnectionHandler( QTcpSocket *socket , QObject *parent )
-    :QObject( parent ), client(socket), networkProtocol(this, client), clientError()
+    :QObject( parent ), client(socket), clientError()
 {
     setupConnections();
 }
 
 ConnectionHandler::~ConnectionHandler()
 {
-    delete client;
+//     delete client;
 }
 
 /**
@@ -43,24 +42,24 @@ ConnectionHandler::~ConnectionHandler()
  */
 void ConnectionHandler::setupConnections()
 {
-    connect( client, SIGNAL( readyRead() ), &networkProtocol, SLOT( readData() ) );
+    connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
 
-    connect( &networkProtocol, SIGNAL(messageReady(const QString)), this, SIGNAL(messageArrived(const QString)));
+    connect( NetworkProtocol::instance(), SIGNAL(messageReady(const QString, const qint8 )), this, SIGNAL(messageArrived(const QString, const qint8 )));
 
-    connect(&networkProtocol, SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError) ), this, SLOT(networkProtocolErrorSlot(NetworkProtocol::ProtocolError)) );
-
-    connect( client, SIGNAL(disconnected()), this, SLOT(disconnected()) );
+    connect( NetworkProtocol::instance(), SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError) ), this, SLOT(networkProtocolErrorSlot(NetworkProtocol::ProtocolError)) );
 
 //TODO QAbstractSocket::SocketError is not a registered metatype, so for queued connections, you will have to register it with Q_REGISTER_METATYPE
     connect( client, SIGNAL(error( QAbstractSocket::SocketError )), this,SLOT(socketErrors( QAbstractSocket::SocketError )) ) ;
 
     connect( client, SIGNAL(stateChanged( QAbstractSocket::SocketState ) ), this, SLOT( socketStateChanged(QAbstractSocket::SocketState) ) );
+
+    connect( client, SIGNAL(disconnected()), this, SIGNAL(disconnectMe()) );
 }
 
 void ConnectionHandler::sendMessage(QString msg, qint8 type)
 {
-    QByteArray packet = networkProtocol.createPacket( msg, type );
-    qint32 size = networkProtocol.sizeOfPacket( packet );
+    QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type );
+    qint32 size = NetworkProtocol::instance()->sizeOfPacket( packet );
 
     //sending the packet size first
     client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
@@ -68,9 +67,9 @@ void ConnectionHandler::sendMessage(QString msg, qint8 type)
     client->write(packet);
 }
 
-void ConnectionHandler::disconnected()
+void ConnectionHandler::dataArrived()
 {
-    Server::instance()->playerDisconnected( this, clientError );
+    NetworkProtocol::instance()->readData( client );
 }
 
 void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError err )
@@ -83,8 +82,8 @@ void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError
             sendMessage("", 'a' );
             client->flush();//causes the socket to send the data "immediately"
             client->close();
-            clientError = QString();//storing the error
-            Server::instance()->playerDisconnected( this, clientError);
+            clientError = tr("invalid protocol format");//storing the error
+            emit disconnectMe();
             break;
         }
         case NetworkProtocol::InvalidVersion:
@@ -93,8 +92,8 @@ void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError
             sendMessage("", 'b' );
             client->flush();
             client->close();
-            clientError = QString();
-            Server::instance()->playerDisconnected( this, clientError );
+            clientError = tr("invalid protocol version");
+            emit disconnectMe();
             break;
         }
         default:
@@ -103,8 +102,8 @@ void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError
             sendMessage("", 'c' );
             client->flush();
             client->close();
-            clientError = QString();
-            Server::instance()->playerDisconnected( this, clientError );
+            clientError = tr("unkown protocol error");
+            emit disconnectMe();
         }
     }
 }

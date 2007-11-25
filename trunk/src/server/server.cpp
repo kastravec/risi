@@ -29,9 +29,9 @@ Server *Server::inst = 0;
  * @param parent
  */
 Server::Server( QObject *parent )
-    :QTcpServer(parent), hostedGames(), connections(), games(), onlineStatus( false )
+    :QTcpServer(parent), hostedGames(), games(), connectedPlayers(), onlineStatus( false )
 {
-    connect( this, SIGNAL(newConnection()), this, SLOT(newPlayerConnection()) );
+    connect( this, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()) );
 }
 
 /**
@@ -70,18 +70,14 @@ void Server::hostGame(const QString &gameName)
 /**
  * this slot is called for every new incoming connection
  */
-void Server::newPlayerConnection()
+void Server::newConnectionSlot()
 {
         while( hasPendingConnections() )
         {
             QTcpSocket *newConnection = nextPendingConnection();
-            ConnectionHandler *newConnectionHandler = new ConnectionHandler( newConnection, this );
-
             //add a the socket and the connection handeler for that socket in a map
-            connections[ newConnection ] = newConnectionHandler;
-
-            //for every message arrived, the connection handler will emit a signal to notify server to emit its signal
-            connect ( newConnectionHandler, SIGNAL(messageArrived(const QString, const qint8) ), this, SIGNAL(messageArrived(const QString, const qint8)) );
+            connectedPlayers[ newConnection ] = new Player( newConnection, this );
+            qDebug()<<"connected players: " <<connectedPlayers.count();
         }
 }
 
@@ -89,10 +85,12 @@ void Server::newPlayerConnection()
  * this function removes a connection which was dropped/disconnected
  * @param handler
  */
-void Server::playerDisconnected( ConnectionHandler *handler, QString err )
+void Server::playerDisconnected( Player *player, const QString &err )
 {
-    connections.remove( handler->socket() );
-    handler->deleteLater();
+    connectedPlayers.remove( const_cast<QTcpSocket *>( player->connectionSocket() ) );
+    player->deleteLater();
+
+    qDebug()<<connectedPlayers.count();
 
     if( ! err.isNull() )
         emit playerDisconnectedSignal( err );

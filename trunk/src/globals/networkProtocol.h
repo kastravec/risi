@@ -29,29 +29,28 @@ class NetworkProtocol: public QObject
     Q_OBJECT
 
     public:
-        NetworkProtocol( QObject *parent = 0, QTcpSocket *sock =0 );
         ~NetworkProtocol();
 
         enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
 
-
+        static NetworkProtocol *instance();
         QByteArray createPacket( const QString &msg, qint8 type ) const;
         qint32 sizeOfPacket( const QByteArray &packet ) const { return qToBigEndian( packet.size() );  }
-
-    public slots:
-        void readData();
+        void readData( QTcpSocket *client );
 
     signals:
         void messageReady( const QString msg, const qint8 msgType );
         void networkProtocolError( NetworkProtocol::ProtocolError err );
 
     private:
-        QTcpSocket *client;
-        QString clientError;
+        NetworkProtocol( QObject *parent = 0 );
+
         qint8 messageType;
         qint32 packetSize;
         qint32 protocolFormat;
         qint32 protocolVersion;
+
+        static NetworkProtocol *inst;
 };
 
 #endif

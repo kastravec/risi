@@ -20,9 +20,10 @@
 #include <QDataStream>
 #include "networkProtocol.h"
 
+NetworkProtocol *NetworkProtocol::inst = 0;
 
-NetworkProtocol::NetworkProtocol( QObject *parent, QTcpSocket *sock )
-    :QObject( parent ), client( sock ), clientError(), messageType(0), packetSize(-1), protocolFormat(10), protocolVersion(11)
+NetworkProtocol::NetworkProtocol( QObject *parent )
+    :QObject( parent ), messageType(0), packetSize(-1), protocolFormat(10), protocolVersion(11)
 {
 }
 
@@ -31,10 +32,18 @@ NetworkProtocol::~NetworkProtocol()
 //     delete client;
 }
 
+NetworkProtocol *NetworkProtocol::instance()
+{
+    if( inst == 0)
+        inst = new NetworkProtocol;
+
+    return inst;
+}
+
 /**
  * this slot is called when data are available for reading
  */
-void NetworkProtocol::readData()
+void NetworkProtocol::readData( QTcpSocket * client )
 {
     //read until there are no bytes available basically
     while (client->bytesAvailable() > 0)

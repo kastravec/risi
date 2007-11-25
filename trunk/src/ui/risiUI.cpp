@@ -76,7 +76,7 @@ class ConnectToIPDialog: public QDialog
 };
 
 RISIui::RISIui(QWidget *parent)
-    :QMainWindow(parent), model( new QStandardItemModel ), nickNameCombobox( new QComboBox ), onlineStatus( false), appStatus( new QLabel( tr("Server not ready! "), this ) )
+    :QMainWindow(parent), nickNameCombobox( new QComboBox ), onlineStatus( false), appStatus( new QLabel( tr("Server not ready! "), this ) ), model( new QStandardItemModel )
 {
     resize( 800,600);
     setAnimated(true);
@@ -338,7 +338,7 @@ void RISIui::serverInfoActionTriggered()
     }
 
     QString port = QString::number( RISIapplication::instance()->serverPort() );
-    QString nrOfPlayers = QString::number( RISIapplication::instance()->connectedPlayers() );
+    QString nrOfPlayers = QString::number( RISIapplication::instance()->numberOfConnectedPlayers() );
 
     QGridLayout *gridLayout = new QGridLayout;
     gridLayout->addWidget( new QLabel( tr("Server IP: "), &dialog ), 0, 0, Qt::AlignTop );
