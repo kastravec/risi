@@ -21,11 +21,14 @@
 #ifndef RISIAPPLICATION_H
 #define RISIAPPLICATION_H
 
-#include "ui/risiUI.h"
 #include "server/server.h"
-#include "http/httpControler.h"
-#include "tcpClient.h"
-#include "protocol.h"
+
+class Protocol;
+class TcpClient;
+class RISIui;
+class HttpControler;
+
+class QStandardItemModel;
 
 class RISIapplication: public QObject
 {

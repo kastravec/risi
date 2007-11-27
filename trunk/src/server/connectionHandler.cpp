@@ -44,7 +44,7 @@ void ConnectionHandler::setupConnections()
 {
     connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
 
-    connect( NetworkProtocol::instance(), SIGNAL(messageReady(const QString, const qint8 )), this, SIGNAL(messageArrived(const QString, const qint8 )));
+    connect( NetworkProtocol::instance(), SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )));
 
     connect( NetworkProtocol::instance(), SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError) ), this, SLOT(networkProtocolErrorSlot(NetworkProtocol::ProtocolError)) );
 
@@ -56,9 +56,9 @@ void ConnectionHandler::setupConnections()
     connect( client, SIGNAL(disconnected()), this, SIGNAL(disconnectMe()) );
 }
 
-void ConnectionHandler::sendMessage(QString msg, qint8 type)
+void ConnectionHandler::sendMessage(QString msg, qint8 type, qint8 gameID )
 {
-    QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type );
+    QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type, gameID );
     qint32 size = NetworkProtocol::instance()->sizeOfPacket( packet );
 
     //sending the packet size first
@@ -79,7 +79,7 @@ void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError
         case NetworkProtocol::InvalidFormat:
         {
             qDebug()<<"invalid protocol format";
-            sendMessage("", 'a' );
+            sendMessage("", 'a', -1 );
             client->flush();//causes the socket to send the data "immediately"
             client->close();
             clientError = tr("invalid protocol format");//storing the error
@@ -89,7 +89,7 @@ void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError
         case NetworkProtocol::InvalidVersion:
         {
             qDebug()<<"invalid protocol version";
-            sendMessage("", 'b' );
+            sendMessage("", 'b', -1 );
             client->flush();
             client->close();
             clientError = tr("invalid protocol version");
@@ -99,7 +99,7 @@ void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError
         default:
         {
             qDebug()<<"unkown protocol error";
-            sendMessage("", 'c' );
+            sendMessage("", 'c', -1 );
             client->flush();
             client->close();
             clientError = tr("unkown protocol error");

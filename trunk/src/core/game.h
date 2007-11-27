@@ -21,12 +21,8 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "board.h"
-#include "boardView.h"
-
-/**
- *
- */
+#include <QStringList>
+#include <QObject>
 
 class Game: public QObject
 {
@@ -40,8 +36,6 @@ class Game: public QObject
 
     private:
         QString name;
-        Board *board;
-        BoardView *boardView;
         QStringList scriptFiles;
 };
 

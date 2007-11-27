@@ -18,15 +18,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QDebug>
-#include <QString>
-
+#include "server/server.h"
 #include "protocol.h"
+#include "game.h"
 
 Protocol *Protocol::inst = 0;
 
 Protocol::Protocol()
-    :QObject()
 {}
 
 Protocol *Protocol::instance()
@@ -42,7 +40,7 @@ Protocol *Protocol::instance()
  * @param msg
  * @param msgType
  */
-void Protocol::parseMessage( const QString msg, const qint8 msgType )//TODO protocol
+void Protocol::parseMessage( const QByteArray msg, const qint8 msgType/*, Game *game*/ )//TODO protocol
 {
     qDebug()<<"message received to be parsed: " <<msg <<"type: " <<msgType;
 
@@ -58,7 +56,6 @@ void Protocol::parseMessage( const QString msg, const qint8 msgType )//TODO prot
         }
         case NickName:
         {
-            emit updateNickName( msg );//FIXME ??
             break;
         }
         case HostRequest:

@@ -34,18 +34,17 @@ class NetworkProtocol: public QObject
         enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
 
         static NetworkProtocol *instance();
-        QByteArray createPacket( const QString &msg, qint8 type ) const;
+        QByteArray createPacket( const QString &msg, qint8 type, qint8 gameID ) const;
         qint32 sizeOfPacket( const QByteArray &packet ) const { return qToBigEndian( packet.size() );  }
         void readData( QTcpSocket *client );
 
     signals:
-        void messageReady( const QString msg, const qint8 msgType );
+        void messageReady( const QByteArray msg, const qint8 msgType, const qint8 gameID );
         void networkProtocolError( NetworkProtocol::ProtocolError err );
 
     private:
         NetworkProtocol( QObject *parent = 0 );
 
-        qint8 messageType;
         qint32 packetSize;
         qint32 protocolFormat;
         qint32 protocolVersion;

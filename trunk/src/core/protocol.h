@@ -21,13 +21,12 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
-#include <QObject>
-class QString;
+class Game;
 
-class Protocol : public QObject
+#include <QByteArray>
+
+class Protocol
 {
-    Q_OBJECT
-
     public:
         static Protocol*instance();
 
@@ -40,11 +39,8 @@ class Protocol : public QObject
                             JoinGame = 'j',
                             LeaveGame = 'a'
                          };
-    public slots:
-        void parseMessage( const QString msg, const qint8 msgType );
 
-    signals:
-        void updateNickName( const QString nick );
+        void parseMessage( const QByteArray msg, const qint8 msgType/*, Game *game*/ );
 
     private:
         Protocol();

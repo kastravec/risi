@@ -31,14 +31,14 @@ class TcpClient: public QObject
     public:
         TcpClient( QObject *parent = 0 );
 
-        void sendMessage(QString msg, qint8 type);
+        void sendMessage( QString msg, qint8 type, qint8 gameID );
         QString serverIP() const { return client->peerAddress().toString(); }
         qint16 serverPort() const { return client->peerPort(); }
         QString lastError() const { return clientError; }
         void connectToServer( const QString server, const int port );
 
     signals:
-        void messageArrived( const QString msg, const qint8 msgType );
+        void messageArrived( const QString msg, const qint8 msgType, const qint8 );
 
     private slots:
         void dataArrived();

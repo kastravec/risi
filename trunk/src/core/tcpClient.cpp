@@ -48,9 +48,9 @@ void TcpClient::setupConnections()
 
 }
 
-void TcpClient::sendMessage(QString msg, qint8 type)
+void TcpClient::sendMessage(QString msg, qint8 type, qint8 gameID )
 {
-    QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type );
+    QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type, gameID );
     qint32 size = NetworkProtocol::instance()->sizeOfPacket( packet );
 
     client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
@@ -64,7 +64,7 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
         case NetworkProtocol::InvalidFormat:
         {
             qDebug()<<"client:"<<"invalid protocol format";
-            sendMessage("", 'a' );
+            sendMessage("", 'a', -1 );
             client->flush();
             client->close();
             clientError = QString(" Invalid network protocol format ! ");
@@ -74,7 +74,7 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
         case NetworkProtocol::InvalidVersion:
         {
             qDebug()<<"invalid protocol version";
-            sendMessage("", 'b' );
+            sendMessage("", 'b', -1 );
             client->close();
             clientError = QString("Invalid network protocol version ! ");
             RISIapplication::instance()->playerDisconnected( this );
@@ -83,7 +83,7 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
         default:
         {
             qDebug()<<"unkown protocol error";
-            sendMessage("", 'c' );
+            sendMessage("", 'c', -1 );
             client->close();
             clientError = QString("Unknown network protocol ! ");
             RISIapplication::instance()->playerDisconnected( this );

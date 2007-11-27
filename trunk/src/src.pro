@@ -52,3 +52,4 @@ SOURCES += ui/chatUI.cpp \
            core/player.cpp \
            http/httpControler.cpp \
            main.cpp
+           

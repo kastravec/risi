@@ -23,7 +23,7 @@
 NetworkProtocol *NetworkProtocol::inst = 0;
 
 NetworkProtocol::NetworkProtocol( QObject *parent )
-    :QObject( parent ), messageType(0), packetSize(-1), protocolFormat(10), protocolVersion(11)
+    :QObject( parent ), packetSize(-1), protocolFormat(10), protocolVersion(11)
 {
 }
 
@@ -98,18 +98,25 @@ void NetworkProtocol::readData( QTcpSocket * client )
             return;
         }
         qDebug()<<"8";
-        //read protocol header: the type of message
+
+        //read protocol header:
+        // read type of message
+        qint8 messageType;
         inStream >> messageType;
 
+        //read game id
+        qint8 gameID;
+        inStream >> gameID;
+
         //read message
-        QString message;
+        QByteArray message;
         inStream >> message;
 
-        emit messageReady( message, messageType );
+        emit messageReady( message, messageType, gameID );
     }
 }
 
-QByteArray NetworkProtocol::createPacket( const QString &msg, qint8 type ) const
+QByteArray NetworkProtocol::createPacket( const QString &msg, qint8 type, qint8 gameID ) const
 {
     QByteArray packet;
     QDataStream out(&packet, QIODevice::WriteOnly );
@@ -120,6 +127,7 @@ QByteArray NetworkProtocol::createPacket( const QString &msg, qint8 type ) const
 
     //inserting the message type and message itself in the packet
     out << type;
+    out <<gameID;
     out << msg;
 
     return packet;
