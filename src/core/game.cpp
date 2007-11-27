@@ -23,6 +23,4 @@
 Game::Game( const QString &nm, QObject * parent )
     :QObject( parent ), name(nm)
 {
-    board = new Board( this );
-    boardView = new BoardView( board);
 }

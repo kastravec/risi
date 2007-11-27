@@ -23,13 +23,18 @@
 #include <QSettings>
 #include <QNetworkInterface>
 
+#include "ui/risiUI.h"
+#include "http/httpControler.h"
+#include "tcpClient.h"
+#include "protocol.h"
+
 #include "gameListXML.h"
 #include "risiApplication.h"
 
 RISIapplication* RISIapplication::inst = 0;
 
 RISIapplication::RISIapplication( QObject *parent )
-    :QObject( parent ), xmlFile( new QFile("gameList.xml") ), tcpClients(), serverErrors(), protocol( Protocol::instance() ), http ( HttpControler::instance() )
+    :QObject( parent ), protocol( Protocol::instance() ), http ( HttpControler::instance() ), tcpClients(), serverErrors(), xmlFile( new QFile("gameList.xml") )
 {
 }
 
@@ -106,8 +111,6 @@ void RISIapplication::setupConnections()
     connect( risiUI, SIGNAL(chosenGameToHost(const QString&)), server, SLOT( hostGame(const QString &)) );
 
     connect( server, SIGNAL(playerDisconnectedSignal(const QString)), risiUI, SLOT(playerDisconnectedSlot(const QString) ) );
-
-    connect(server, SIGNAL(messageArrived(const QString, const qint8)), protocol, SLOT(parseMessage(const QString, const qint8)) );
 
     connect( risiUI, SIGNAL(connectToIPSignal(const QString, const int)), this, SLOT(connectToServer(const QString, const int)) );
 

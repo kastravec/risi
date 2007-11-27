@@ -22,11 +22,11 @@
 #define HOSTGAMEDIALOG_H
 
 #include <QDialog>
-#include <QModelIndex>
-#include <QPushButton>
-#include <QListView>
 
 class QStandardItemModel;
+class QListView;
+class QPushButton;
+class QModelIndex;
 
 class HostGameDialog: public QDialog
 {

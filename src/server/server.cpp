@@ -20,6 +20,7 @@
 
 #include <QSettings>
 
+#include "core/player.h"
 #include "server.h"
 
 Server *Server::inst = 0;
@@ -77,7 +78,6 @@ void Server::newConnectionSlot()
             QTcpSocket *newConnection = nextPendingConnection();
             //add a the socket and the connection handeler for that socket in a map
             connectedPlayers[ newConnection ] = new Player( newConnection, this );
-            qDebug()<<"connected players: " <<connectedPlayers.count();
         }
 }
 

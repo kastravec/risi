@@ -22,8 +22,9 @@
 #define SERVER_H
 
 #include <QTcpServer>
-#include "core/player.h"
-#include "core/game.h"
+
+class Player;
+class Game;
 
 class Server : public QTcpServer
 {

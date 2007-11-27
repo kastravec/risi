@@ -23,6 +23,8 @@
 
 #include "server/connectionHandler.h"
 
+class Game;
+
 class Player : public QObject
 {
     Q_OBJECT
@@ -32,14 +34,16 @@ class Player : public QObject
 
         const QTcpSocket * connectionSocket() { return connectionHandler.socket(); }
         const QString &nickName() const { return nick; }
+        const void addGame( Game *gm ) { games.append( gm ); }
 
     private slots:
         void disconnected();
-
+        void messageArrivedSlot( const QByteArray msg, const qint8 msgType, const qint8 gameID );
     private:
         void setupConnections();
 
         ConnectionHandler connectionHandler;
+        QList < Game *> games;
         QString nick;
 };
 

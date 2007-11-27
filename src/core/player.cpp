@@ -21,16 +21,17 @@
 #include "core/protocol.h"
 #include "player.h"
 #include "server/server.h"
+// // #include "game.h"
 
 Player::Player( QTcpSocket *client, QObject *parent )
-	:QObject( parent ), connectionHandler( client, this ), nick( "player"+QString::number( client->socketDescriptor()*2 ) )
+	:QObject( parent ), connectionHandler( client, this ), games(), nick( "player"+QString::number( client->socketDescriptor()*2 ) )
 {
     setupConnections();
 }
 
 void Player::setupConnections()
 {
-    connect( &connectionHandler, SIGNAL(messageArrived(const QString, const qint8)), Protocol::instance(), SLOT(parseMessage(const QString, const qint8)) );
+    connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8)), this, SLOT(parseMessage(const QByteArray, const qint8)) );
 
     connect( &connectionHandler, SIGNAL(disconnectMe()), this, SLOT(disconnected()) );
 }
@@ -40,5 +41,11 @@ void Player::disconnected()
     qDebug()<<"disconnected slot" <<connectionHandler.lastError();
 
     Server::instance()->playerDisconnected( this, connectionHandler.lastError() );
+}
+
+void Player::messageArrivedSlot( const QByteArray msg, const qint8 msgType, const qint8 gameID )
+{
+
+//     Protocol::instance()->parseMessage( msg, msgType, games.at( 0 )  ); //FIXME consider game id
 }
 
