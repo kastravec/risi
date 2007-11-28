@@ -21,8 +21,9 @@
 #ifndef TCPCLIENT_H
 #define TCPCLIENT_H
 
-#include "globals/networkProtocol.h"
 #include <QHostAddress>
+#include <QTcpSocket>
+#include "globals/networkProtocol.h"
 
 class TcpClient: public QObject
 {
@@ -38,7 +39,7 @@ class TcpClient: public QObject
         void connectToServer( const QString server, const int port );
 
     signals:
-        void messageArrived( const QString msg, const qint8 msgType, const qint8 );
+        void messageArrived( const QByteArray msg, const qint8 msgType, const qint8 gameID );
 
     private slots:
         void dataArrived();

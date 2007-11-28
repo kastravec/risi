@@ -21,8 +21,10 @@
 #ifndef NETWORKPROTOCOL_H
 #define NETWORKPROTOCOL_H
 
-#include <QTcpSocket>
 #include <qendian.h>
+#include <QObject>
+
+class QTcpSocket;
 
 class NetworkProtocol: public QObject
 {

@@ -21,9 +21,8 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
-class Game;
-
 #include <QByteArray>
+class Game;
 
 class Protocol
 {
@@ -31,7 +30,7 @@ class Protocol
         static Protocol*instance();
 
         enum MessageType {
-                            Game = 'g',
+                            GameMsg = 'g',
                             Chat = 'c',
                             NickName = 'n',
                             HostRequest = 'h',
@@ -40,7 +39,7 @@ class Protocol
                             LeaveGame = 'a'
                          };
 
-        void parseMessage( const QByteArray msg, const qint8 msgType/*, Game *game*/ );
+        void parseMessage( const QByteArray msg, const qint8 msgType, Game *game );
 
     private:
         Protocol();

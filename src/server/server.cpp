@@ -61,13 +61,6 @@ void Server::writeSettings()
 {
     QSettings settings;
 }
-
-void Server::hostGame(const QString &gameName)
-{
-    if( !gameName.isEmpty() )
-        qDebug()<<gameName;
-}
-
 /**
  * this slot is called for every new incoming connection
  */
@@ -89,9 +82,4 @@ void Server::playerDisconnected( Player *player, const QString &err )
 {
     connectedPlayers.remove( const_cast<QTcpSocket *>( player->connectionSocket() ) );
     player->deleteLater();
-
-    qDebug()<<connectedPlayers.count();
-
-    if( ! err.isNull() )
-        emit playerDisconnectedSignal( err );
 }
