@@ -31,7 +31,7 @@ Player::Player( QTcpSocket *client, QObject *parent )
 
 void Player::setupConnections()
 {
-    connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8)), this, SLOT(parseMessage(const QByteArray, const qint8)) );
+    connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )), this, SLOT(messageArrivedSlot(const QByteArray, const qint8, const qint8 )) );
 
     connect( &connectionHandler, SIGNAL(disconnectMe()), this, SLOT(disconnected()) );
 }

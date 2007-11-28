@@ -40,13 +40,6 @@ class Server : public QTcpServer
         void playerDisconnected( Player *player, const QString &error );
         void updateOnlineStatus( const bool online );
 
-    public slots:
-        void hostGame(const QString &gameName);
-
-    signals:
-        void playerDisconnectedSignal(const QString msg);
-        void messageArrived( const QString msg, const qint8 msgType );
-
     private slots:
         void newConnectionSlot();
 

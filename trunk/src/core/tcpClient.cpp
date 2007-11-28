@@ -21,6 +21,7 @@
 #include "tcpClient.h"
 #include "risiApplication.h"
 
+
 TcpClient::TcpClient( QObject * parent )
     :QObject( parent ), client(new QTcpSocket(this) ), clientError()
 {
@@ -36,7 +37,9 @@ void TcpClient::connectToServer(const QString ip, const int port )
 void TcpClient::setupConnections()
 {
     connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
-    connect( NetworkProtocol::instance(), SIGNAL(messageReady(const QString, const qint8 )), this, SIGNAL(messageArrived(const QString, const qint8 )) );
+
+    connect( NetworkProtocol::instance(), SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )) );
+
     connect( NetworkProtocol::instance(), SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError)), this, SLOT(protocolError(NetworkProtocol::ProtocolError) ) );
 
     connect( client, SIGNAL(disconnected()), this, SLOT(disconnected()) );

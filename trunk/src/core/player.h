@@ -39,6 +39,7 @@ class Player : public QObject
     private slots:
         void disconnected();
         void messageArrivedSlot( const QByteArray msg, const qint8 msgType, const qint8 gameID );
+
     private:
         void setupConnections();
 

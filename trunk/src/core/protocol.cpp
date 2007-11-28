@@ -40,13 +40,13 @@ Protocol *Protocol::instance()
  * @param msg
  * @param msgType
  */
-void Protocol::parseMessage( const QByteArray msg, const qint8 msgType/*, Game *game*/ )//TODO protocol
+void Protocol::parseMessage( const QByteArray msg, const qint8 msgType, Game *game )//TODO protocol
 {
     qDebug()<<"message received to be parsed: " <<msg <<"type: " <<msgType;
 
     switch( msgType )
     {
-        case Game:
+        case GameMsg:
         {
             break;
         }
