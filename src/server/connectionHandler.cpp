@@ -21,7 +21,9 @@
 #include "server/connectionHandler.h"
 
 /**
- * Default public constructor
+ * \class ConnectionHandler
+ *
+ * \brief Default public constructor
  * initializes protocol format and protocol version
  * @param socket
  * @param parent
@@ -32,13 +34,15 @@ ConnectionHandler::ConnectionHandler( QTcpSocket *socket , QObject *parent )
     setupConnections();
 }
 
+/**
+ * \brief Destructor
+ */
 ConnectionHandler::~ConnectionHandler()
-{
-//     delete client;
-}
+{}
 
 /**
- * this private functions helps in creating signal-slots connections
+ * \brief this private functions helps in creating signal-slots connections
+ * \internal
  */
 void ConnectionHandler::setupConnections()
 {
@@ -56,6 +60,12 @@ void ConnectionHandler::setupConnections()
     connect( client, SIGNAL(disconnected()), this, SIGNAL(disconnectMe()) );
 }
 
+/**
+ * \brief sends message to the other peer
+ * @param msg the message
+ * @param type type of message
+ * @param gameID id of the game which the player is on
+ */
 void ConnectionHandler::sendMessage(QString msg, qint8 type, qint8 gameID )
 {
     QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type, gameID );
@@ -67,11 +77,18 @@ void ConnectionHandler::sendMessage(QString msg, qint8 type, qint8 gameID )
     client->write(packet);
 }
 
+/**
+ * \brief this slot is called everytime data has arrived for the connection
+ */
 void ConnectionHandler::dataArrived()
 {
     NetworkProtocol::instance()->readData( client );
 }
 
+/**
+ * \brief this slot is called everytime there is a network protocol error
+ * @param err NetworkProtocol::ProtocolError
+ */
 void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError err )
 {
     switch( err )
@@ -108,6 +125,10 @@ void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError
     }
 }
 
+/**
+ * \brief this slot is called everytime a socket error has occurred
+ * @param errors QAbstractSocket::SocketError
+ */
 void ConnectionHandler::socketErrors( QAbstractSocket::SocketError errors)
 {
     switch( errors )
@@ -202,6 +223,10 @@ void ConnectionHandler::socketErrors( QAbstractSocket::SocketError errors)
 
 }
 
+/**
+ * \brief this slot is called everytime the state of the socket changes
+ * @param state QAbstractSocket::SocketState
+ */
 void ConnectionHandler::socketStateChanged( QAbstractSocket::SocketState state )
 {
     switch( state )
@@ -247,4 +272,20 @@ void ConnectionHandler::socketStateChanged( QAbstractSocket::SocketState state )
 
 }
 
+/**
+ * \brief retuns the socket of the connection
+ * @return const QTcpSocket *
+ */
+const QTcpSocket * ConnectionHandler::socket() const
+{
+    return client;
+}
 
+/**
+ * \brief retuns the last error of the connection
+ * @return QString
+ */
+QString ConnectionHandler::lastError() const
+{
+    return clientError;
+}

@@ -24,9 +24,18 @@
 
 Protocol *Protocol::inst = 0;
 
+/**
+ * \class Protocol
+ * The class responsible for the game protocol
+ * \brief
+ */
 Protocol::Protocol()
 {}
 
+/**
+ * \brief returns the instance of Protocol
+ * @return Protocol *
+ */
 Protocol *Protocol::instance()
 {
     if( inst == 0 )

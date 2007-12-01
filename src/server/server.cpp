@@ -26,7 +26,7 @@
 Server *Server::inst = 0;
 
 /**
- * Private default constructor
+ * \brief Private default constructor
  * @param parent
  */
 Server::Server( QObject *parent )
@@ -36,7 +36,7 @@ Server::Server( QObject *parent )
 }
 
 /**
- * returns the instance of Server, singleton pattern
+ * \brief returns the instance of Server, singleton pattern
  * @return Server*
  */
 Server * Server::instance()
@@ -47,22 +47,18 @@ Server * Server::instance()
     return inst;
 }
 
+/**
+ * \brief
+ * @param online
+ */
 void Server::updateOnlineStatus( const bool online )
 {
 
 }
 
-void Server::readSettings()
-{
-    QSettings settings;
-}
-
-void Server::writeSettings()
-{
-    QSettings settings;
-}
 /**
- * this slot is called for every new incoming connection
+ * \brief this slot is called for every new incoming connection
+ * \internal
  */
 void Server::newConnectionSlot()
 {
@@ -75,7 +71,7 @@ void Server::newConnectionSlot()
 }
 
 /**
- * this function removes a connection which was dropped/disconnected
+ * \brief this function removes a connection which was dropped/disconnected
  * @param handler
  */
 void Server::playerDisconnected( Player *player, const QString &err )
@@ -83,3 +79,13 @@ void Server::playerDisconnected( Player *player, const QString &err )
     connectedPlayers.remove( const_cast<QTcpSocket *>( player->connectionSocket() ) );
     player->deleteLater();
 }
+
+/**
+ * \brief returns the number of connected players
+ * @return int
+ */
+int Server::numberOfConnectedPlayers() const
+{
+    return connectedPlayers.count();
+}
+

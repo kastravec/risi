@@ -20,7 +20,50 @@
 
 #include "game.h"
 
+/**
+ * \class Game
+ *
+ * \brief Constructor
+ * @param nm QString name for the game
+ * @param parent QObject parent
+ */
 Game::Game( const QString &nm, QObject * parent )
-    :QObject( parent ), name(nm)
+    :QObject( parent ), gameName( nm ), gameID( -1 )
 {
+}
+
+/**
+ * \brief name Property : Sets the name property of the game
+ * @param nm QString
+ */
+void Game::setName( const QString & nm )
+{
+    gameName = nm;
+}
+
+/**
+ * \brief name Property: returns the name property
+ * @return QString
+ */
+QString Game::name() const
+{
+    return gameName;
+}
+
+/**
+ * \brief id Property: returns the id property
+ * @return qint32
+ */
+qint8 Game::id() const
+{
+    return gameID;
+}
+
+/**
+ * \brief id Property: sets the id property
+ * @param iD
+ */
+void Game::setID( qint8 iD )
+{
+    gameID = iD;
 }

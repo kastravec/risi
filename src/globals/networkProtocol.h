@@ -33,12 +33,22 @@ class NetworkProtocol: public QObject
     public:
         ~NetworkProtocol();
 
+        Q_PROPERTY( qint32 protocolFormat READ protocolFormat WRITE setProtocolFormat SCRIPTABLE false )
+        Q_PROPERTY( qint32 protocolVersion READ protocolVersion WRITE setProtocolVersion SCRIPTABLE false )
+
         enum ProtocolError { InvalidFormat =0, InvalidVersion = 1 };
 
         static NetworkProtocol *instance();
+
+        void setProtocolFormat( qint32 fm );
+        qint32 protocolFormat() const;
+
+        void setProtocolVersion ( qint32 vers );
+        qint32 protocolVersion() const;
+
         QByteArray createPacket( const QString &msg, qint8 type, qint8 gameID ) const;
-        qint32 sizeOfPacket( const QByteArray &packet ) const { return qToBigEndian( packet.size() );  }
         void readData( QTcpSocket *client );
+        qint32 sizeOfPacket( const QByteArray &packet ) const;
 
     signals:
         void messageReady( const QByteArray msg, const qint8 msgType, const qint8 gameID );
@@ -46,10 +56,9 @@ class NetworkProtocol: public QObject
 
     private:
         NetworkProtocol( QObject *parent = 0 );
-
         qint32 packetSize;
-        qint32 protocolFormat;
-        qint32 protocolVersion;
+        qint32 format;
+        qint32 version;
 
         static NetworkProtocol *inst;
 };

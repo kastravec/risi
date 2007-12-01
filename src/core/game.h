@@ -26,16 +26,27 @@
 
 class Game: public QObject
 {
+    Q_OBJECT
+
     public:
         Game( const QString &nm = 0, QObject *parent = 0);
 
-        QString nameOfGame() const { return name; }
-        void setName(const QString &nm ) { name = nm; }
+        Q_PROPERTY( QString name READ name WRITE setName SCRIPTABLE true USER true )
+        Q_PROPERTY( qint8 id READ id WRITE setID SCRIPTABLE true USER true)
+
+        QString name() const;
+        void setName( const QString &nm );
+
+        qint8 id() const;
+        void setID( qint8 iD );
+
         QStringList scripts() const { return scriptFiles; }
         void setScripts(const QStringList &s) { scriptFiles = s; }
 
     private:
-        QString name;
+        QString gameName;
+        qint8 gameID;
+
         QStringList scriptFiles;
 };
 
