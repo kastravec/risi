@@ -33,10 +33,7 @@ class Server : public QTcpServer
     public:
         static Server * instance();
 
-        QList <Game *> allHostedGames() const { return hostedGames; }
-        QList <Game *> allGames() const { return games; }
-
-        int numberOfConnectedPlayers() const { return connectedPlayers.count(); }
+        int numberOfConnectedPlayers() const;
         void playerDisconnected( Player *player, const QString &error );
         void updateOnlineStatus( const bool online );
 

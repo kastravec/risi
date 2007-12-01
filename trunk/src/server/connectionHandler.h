@@ -39,8 +39,8 @@ class ConnectionHandler: public QObject
         ConnectionHandler( QTcpSocket *sock = 0, QObject *parent = 0);
         ~ConnectionHandler();
 
-        inline const QTcpSocket *socket() { return client; }
-        const QString &lastError() const { return clientError; }
+        const QTcpSocket *socket() const;
+        QString lastError() const;
 
     signals:
         void messageArrived( const QByteArray msg, const qint8 msgType, const qint8 gameID );

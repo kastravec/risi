@@ -46,8 +46,9 @@ class RISIapplication: public QObject
         void saveGameListXML( QStandardItemModel *m );
         void playerDisconnected( TcpClient *client );
         QList <QString> broadcastIPaddresses() const;
-        const qint16 serverPort() { return server->serverPort(); }
-        const int numberOfConnectedPlayers() { return server->numberOfConnectedPlayers(); }
+
+        qint16 serverPort() const;
+        int numberOfConnectedPlayers() const;
 
     public slots:
         void connectToServer( const QString ip, const int port );

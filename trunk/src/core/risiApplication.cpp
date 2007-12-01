@@ -33,11 +33,21 @@
 
 RISIapplication* RISIapplication::inst = 0;
 
+/**
+ * \class RISIapplication
+ *
+ * \brief Constructor
+ * @param parent parent QObject
+ */
 RISIapplication::RISIapplication( QObject *parent )
     :QObject( parent ), protocol( Protocol::instance() ), http ( HttpControler::instance() ), tcpClients(), serverErrors(), xmlFile( new QFile("gameList.xml") )
 {
 }
 
+/**
+ * \brief returns the instance of RISIapplication
+ * @return RISIapplication *
+ */
 RISIapplication* RISIapplication::instance()
 {
     if (inst == 0)
@@ -46,7 +56,7 @@ RISIapplication* RISIapplication::instance()
 }
 
 /**
- * starts the server
+ * \brief starts the server
  */
 void RISIapplication::initServer()
 {
@@ -74,12 +84,18 @@ void RISIapplication::initServer()
         QMessageBox::warning(0, tr("Error: "), tr("Internal application error due to conversion from QVariant to integer! Please, try restart the application and submit a bug report ! ") );
 }
 
+/**
+ * \brief initializes the UI
+ */
 void RISIapplication::initUI()
 {
     risiUI = new RISIui( 0 );
     risiUI->show();
 }
 
+/**
+ * \brief Destructor
+ */
 RISIapplication::~RISIapplication()
 {
     delete xmlFile;
@@ -94,18 +110,30 @@ RISIapplication::~RISIapplication()
     delete NetworkProtocol::instance();
 }
 
-void RISIapplication::gameListXMLrequest( QStandardItemModel *m )
+/**
+ * \brief takes a QStandardItemModel and populates it with data read from the xmlFile
+ * @param m QStandardItemModel
+ */
+void RISIapplication::gameListXMLrequest( QStandardItemModel *m ) //FIXME should be QAbstractItemModel
 {
     GameListXML gameListXmlParser( m );
     gameListXmlParser.readXML( xmlFile );
 }
 
-void RISIapplication::saveGameListXML( QStandardItemModel *model )
+/**
+ * \brief takes a QStandardItemModel and saves it in a xml file
+ * @param model QStandardItemModel
+ */
+void RISIapplication::saveGameListXML( QStandardItemModel *model )//FIXME should be QAbstractItemModel
 {
     GameListXML gameListXmlParser( model );
     gameListXmlParser.writeXML( xmlFile );
 }
 
+/**
+ * \brief sets the SIGNAL-SLOT connections of RISIapplication
+ * \internal
+ */
 void RISIapplication::setupConnections()
 {
     connect( risiUI, SIGNAL(connectToIPSignal(const QString, const int)), this, SLOT(connectToServer(const QString, const int)) );
@@ -115,9 +143,8 @@ void RISIapplication::setupConnections()
 }
 
 /**
- * when a player is disconnected this function is called, so this client will be removed from the list
- * and notifying the other users
- * @param client
+ * \brief when a player is disconnected this function is called, so this client will be removed from the list and notifying the other users
+ * @param client TcpClient *
  */
 void RISIapplication::playerDisconnected( TcpClient *client )
 {
@@ -129,7 +156,12 @@ void RISIapplication::playerDisconnected( TcpClient *client )
         QMessageBox::warning(0, tr("Warning ! "), tr(" Player disconnected due to: ")+error+" !" );
 }
 
-void RISIapplication::goOnlineSlot( const QString nickName, const bool onlineStatus )
+/**
+ * \brief
+ * @param nickName QString
+ * @param onlineStatus bool
+ */
+void RISIapplication::goOnlineSlot( const QString nickName, const bool onlineStatus ) //TODO docs
 {
     bool status;
     if( onlineStatus )
@@ -143,11 +175,11 @@ void RISIapplication::goOnlineSlot( const QString nickName, const bool onlineSta
 }
 
 /**
- *
+ * \brief
  * @param ip
  * @param port
  */
-void RISIapplication::connectToServer( const QString ip, const int port )
+void RISIapplication::connectToServer( const QString ip, const int port ) //TODO docs ?
 {
     if( !isConnectedTo(ip, port) )
     {
@@ -159,10 +191,10 @@ void RISIapplication::connectToServer( const QString ip, const int port )
 }
 
 /**
- * this functions checks whether the user is already connected to the given ip and port
- * @param ip
- * @param port
- * @return
+ * \brief this functions checks whether the user is already connected to the given ip and port
+ * @param ip QString
+ * @param port int
+ * @return bool
  */
 bool RISIapplication::isConnectedTo(const QString ip, const int port )
 {
@@ -182,9 +214,8 @@ bool RISIapplication::isConnectedTo(const QString ip, const int port )
 }
 
 /**
- * iterates through all the available network interfaces on the system
- * and returns a list of IP address
- * @return
+ * \brief iterates through all the available network interfaces on the system and returns a list of IP address
+ * @return QList
  */
 QList <QString> RISIapplication::broadcastIPaddresses() const
 {
@@ -203,7 +234,10 @@ QList <QString> RISIapplication::broadcastIPaddresses() const
         return addresses;
 }
 
-void RISIapplication::parseServerError()
+/**
+ * \brief
+ */
+void RISIapplication::parseServerError() //TODO docs??
 {
     switch( server->serverError() )
     {
@@ -284,3 +318,22 @@ void RISIapplication::parseServerError()
     }
 
 }
+
+/**
+ * \brief returns the port the server is running on
+ * @return qint16
+ */
+qint16 RISIapplication::serverPort() const
+{
+    return server->serverPort();
+}
+
+/**
+ * \brief returns the number of connected players
+ * @return int
+ */
+int RISIapplication::numberOfConnectedPlayers() const
+{
+    return server->numberOfConnectedPlayers();
+}
+

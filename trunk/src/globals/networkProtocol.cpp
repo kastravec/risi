@@ -25,16 +25,27 @@
 
 NetworkProtocol *NetworkProtocol::inst = 0;
 
+/**
+ * \brief Constructor
+ * @param parent  QObject
+ */
 NetworkProtocol::NetworkProtocol( QObject *parent )
-    :QObject( parent ), packetSize(-1), protocolFormat(10), protocolVersion(11)
+    :QObject( parent ), packetSize(-1), format(10), version(11)
 {
 }
 
+/**
+ * \brief Destructor
+ */
 NetworkProtocol::~NetworkProtocol()
 {
 //     delete client;
 }
 
+/**
+ * \brief retuns the instance of NetworkProtocol
+ * @return NetworkProtocol instance
+ */
 NetworkProtocol *NetworkProtocol::instance()
 {
     if( inst == 0)
@@ -44,7 +55,8 @@ NetworkProtocol *NetworkProtocol::instance()
 }
 
 /**
- * this slot is called when data are available for reading
+ * \brief this slot is called when data are available for reading
+ * @param client QTcpSocket
  */
 void NetworkProtocol::readData( QTcpSocket * client )
 {
@@ -83,7 +95,7 @@ void NetworkProtocol::readData( QTcpSocket * client )
         //read and check the protocol format
         qint32 format;
         inStream >> format;
-        if( format != protocolFormat )
+        if( format != format )
         {
             qDebug()<<"5";
             emit networkProtocolError( InvalidFormat );
@@ -91,10 +103,10 @@ void NetworkProtocol::readData( QTcpSocket * client )
         }
         qDebug()<<"6";
         //read and check the protocol version
-        qint32 version;
-        inStream >> version;
+        qint32 vers;
+        inStream >> vers;
 
-        if( version != protocolVersion )
+        if( vers != version )
         {
             qDebug()<<"7";
             emit networkProtocolError( InvalidVersion );
@@ -119,14 +131,21 @@ void NetworkProtocol::readData( QTcpSocket * client )
     }
 }
 
+/**
+ * \brief Creates and retuns a network packet ready to be sent
+ * @param msg the message inside the packet
+ * @param type the type of message
+ * @param gameID the id of the game which the player is connected
+ * @return QByteArray
+ */
 QByteArray NetworkProtocol::createPacket( const QString &msg, qint8 type, qint8 gameID ) const
 {
     QByteArray packet;
     QDataStream out(&packet, QIODevice::WriteOnly );
 
     //inserting the protocol format and version in the packet`
-    out<<protocolFormat;
-    out<<protocolVersion;
+    out<<format;
+    out<<version;
 
     //inserting the message type and message itself in the packet
     out << type;
@@ -135,4 +154,51 @@ QByteArray NetworkProtocol::createPacket( const QString &msg, qint8 type, qint8 
 
     return packet;
 }
+
+/**
+ * \brief retuns the size of the packet in big-endian order which is the network order
+ * @param packet const QByteArray
+ * @return qint32
+*/
+qint32 NetworkProtocol::sizeOfPacket( const QByteArray &packet ) const
+{
+    return qToBigEndian( packet.size() );
+}
+
+/**
+ * \brief retuns the value of the network protocol format
+ * @return qint32
+ */
+qint32 NetworkProtocol::protocolFormat() const
+{
+    return format;
+}
+
+/**
+ * \brief sets the protocol format
+ * @param  qint32
+ */
+void NetworkProtocol::setProtocolFormat( qint32 fm )
+{
+    format = fm;
+}
+
+/**
+ * \brief protocolVersion Property: sets the protocol version
+ * @param vers qint32
+ */
+void NetworkProtocol::setProtocolVersion ( qint32 vers )
+{
+    version = vers;
+}
+
+/**
+ * \brief protocolVersion Property: retuns the protocol version
+ * @return qint32
+ */
+qint32 NetworkProtocol::protocolVersion() const
+{
+    return version;
+}
+
 

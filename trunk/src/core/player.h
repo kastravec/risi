@@ -32,16 +32,22 @@ class Player : public QObject
 	public:
 		Player( QTcpSocket *client, QObject *parent = 0 );
 
-        const QTcpSocket * connectionSocket() { return connectionHandler.socket(); }
-        const QString &nickName() const { return nick; }
-        const void addGame( Game *gm ) { games.append( gm ); }
+        Q_PROPERTY( QString nickname READ nickname WRITE setNickname SCRIPTABLE true USER true )
+
+        const QTcpSocket * connectionSocket();
+
+        QString nickname() const;
+        void setNickname( const QString & name );
+
+        void addGame( Game *gm );
 
     private slots:
         void disconnected();
         void messageArrivedSlot( const QByteArray msg, const qint8 msgType, const qint8 gameID );
 
     private:
-        void setupConnections();
+        void setupConnections() const;
+        Game *gameForID( qint8 iD );
 
         ConnectionHandler connectionHandler;
         QList < Game *> games;
