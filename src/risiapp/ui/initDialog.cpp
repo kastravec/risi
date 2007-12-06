@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include "initDialog.h"
+#include "lineedit.h"
+
 #include <QSettings>
 #include <QPushButton>
 #include <QRadioButton>
@@ -27,7 +29,12 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QGroupBox>
+#include <QSpinBox>
 
+/**
+ * \brief
+ * @param parent QWidget
+ */
 InitDialog::InitDialog( QWidget *parent )
     :QDialog( parent )
 {
@@ -36,6 +43,9 @@ InitDialog::InitDialog( QWidget *parent )
     setFixedSize( sizeHint() );
 }
 
+/**
+ * \brief
+ */
 void InitDialog::setupUI()
 {
     //settings are read so default stored values will be used
@@ -45,7 +55,7 @@ void InitDialog::setupUI()
     //initializing some of the UI controls
     okButton = new QPushButton( tr("Ok"), this );
     cancelButton = new QPushButton( tr("Cancel"), this );
-    nickNameLineEdit = new QLineEdit( this );
+    nickNameLineEdit = new LineEdit( this );
     nickNameLineEdit->setText( settings.value( "nickname", "").toString() );
     advancedOptionsButton = new QRadioButton( tr("Advanced options"), this );
     advancedOptionsButton->setChecked( false );
@@ -97,6 +107,9 @@ void InitDialog::writeSettings()
     settings.endGroup();
 }
 
+/**
+ * \brief
+ */
 void InitDialog::setupConnections()
 {
     connect( okButton, SIGNAL(pressed()), this, SLOT(okButtonPressed()) );
@@ -104,7 +117,10 @@ void InitDialog::setupConnections()
     connect( advancedOptionsButton, SIGNAL(toggled( bool )), this, SLOT(advancedOptionsTriggered()) );
 }
 
-void InitDialog::okButtonPressed()
+/**
+ * \brief
+ */
+void InitDialog::okButtonPressed()//TODO add docs
 {
     if( !nickNameLineEdit->text().isEmpty() && portSpinBox->value() != 0)
     {
@@ -115,8 +131,31 @@ void InitDialog::okButtonPressed()
         QMessageBox::warning( this, tr(" Warning: "), tr(" The nickname and the server port ( advanced options) cannot be empty !! ") );
 }
 
-void InitDialog::advancedOptionsTriggered()
+/**
+ * \brief
+ */
+void InitDialog::advancedOptionsTriggered()//TODO add docs
 {
     advancedOptionsWidget->setVisible( advancedOptionsButton->isChecked() );
     setFixedSize( sizeHint() );
 }
+
+/**
+ * \brief
+ * @return QString
+ */
+const QString InitDialog::nickName() const //TODO add docs
+{
+    return nickNameLineEdit->text();
+}
+
+/**
+ * \brief
+ * @return int
+ */
+const int InitDialog::serverPort() const //TODO add docs
+{
+    return portSpinBox->value();
+}
+
+

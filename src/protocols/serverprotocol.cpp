@@ -19,28 +19,28 @@
  ***************************************************************************/
 
 #include "server.h"
-#include "protocol.h"
+#include "serverprotocol.h"
 #include "game.h"
 
-Protocol *Protocol::inst = 0;
+ServerProtocol *ServerProtocol::inst = 0;
 
 /**
- * \class Protocol
+ * \class ServerProtocol
  * The class responsible for the game protocol
  * \brief Constructor
  */
-Protocol::Protocol()
+ServerProtocol::ServerProtocol()
     :server( Server::instance() )
 {}
 
 /**
- * \brief returns the instance of Protocol
- * @return Protocol *
+ * \brief returns the instance of ServerProtocol
+ * @return ServerProtocol *
  */
-Protocol *Protocol::instance()
+ServerProtocol *ServerProtocol::instance()
 {
     if( inst == 0 )
-        inst = new Protocol;
+        inst = new ServerProtocol;
 
     return inst;
 }
@@ -50,7 +50,7 @@ Protocol *Protocol::instance()
  * @param msg const QByteArray
  * @param msgType const qint8
  */
-void Protocol::parseMessageForGame( const QByteArray msg, const qint8 msgType, Game *game )//TODO protocol
+void ServerProtocol::parseMessageForGame( const QByteArray msg, const qint8 msgType, Game *game )//TODO protocol
 {
     switch( msgType )
     {
@@ -75,15 +75,17 @@ void Protocol::parseMessageForGame( const QByteArray msg, const qint8 msgType, G
  * @param msg const QByteArray
  * @param msgType const qint8
  */
-void Protocol::parseMessageForServer( const QByteArray msg, const qint8 msgType )
+void ServerProtocol::parseMessageForServer( const QByteArray msg, const qint8 msgType )
 {
+    static_cast<qint8> (GameMsg);
+    qDebug()<<GameMsg;
     switch( msgType )
     {
         case 'c'://chat message
         {
             qDebug()<<"looks fine ";
             server->setMessageToPlayers( msg, 'c' );
-            break;
+            return;
         }
         case 'n': //HostRequest
         {

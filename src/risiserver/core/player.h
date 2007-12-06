@@ -22,7 +22,7 @@
 #define PLAYER_H
 
 class Game;
-class Protocol;
+class ServerProtocol;
 class QTcpSocket;
 
 #include "connectionHandler.h"
@@ -31,8 +31,8 @@ class Player : public QObject
 {
     Q_OBJECT
 
-	public:
-		Player( QTcpSocket *client, QObject *parent = 0 );
+    public:
+        Player( QTcpSocket *client, QObject *parent = 0 );
 
         Q_PROPERTY( QString nickname READ nickname WRITE setNickname SCRIPTABLE true USER true )
 
@@ -55,7 +55,7 @@ class Player : public QObject
         ConnectionHandler connectionHandler;
         QList < Game *> games;
         QString nick;
-        Protocol *protocol;
+        ServerProtocol *protocol;
 };
 
 #endif

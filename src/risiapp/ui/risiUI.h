@@ -22,17 +22,25 @@
 #define RISIUI_H
 
 #include <QMainWindow>
-#include <QDockWidget>
 
-#include "chatUI.h"
-#include "gameListUI.h"
-#include "editGamesUI.h"
+class QStandardItemModel;
+class QTabWidget;
+class QComboBox;
+class QLabel;
+class GameListUI;
+class ChatUI;
+class PlayController;
 
 class RISIui: public QMainWindow
 {
     Q_OBJECT
+
     public:
         RISIui(QWidget *parent = 0);
+
+        Q_PROPERTY( QString currentPlayController READ currentPlayController WRITE setCurrentPlayController SCRIPTABLE false USER true )
+
+        RISIui *currentPlayController() const;
 
     private slots:
         void settingsActionTriggered();
@@ -66,6 +74,7 @@ class RISIui: public QMainWindow
         void createStatusBar();
         void readSettings();
         void writeSettings();
+        void setupConnections();
 
         ChatUI *chatUI;
         GameListUI *gameListUI;
@@ -91,6 +100,8 @@ class RISIui: public QMainWindow
         QLabel *appStatus;
         QLabel *onlineStatusLabel;
         QStandardItemModel *model;//FIXME this should be QAbstractItemModel
+
+        PlayController *currentPlayer;
 };
 
 #endif

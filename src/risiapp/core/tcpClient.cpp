@@ -21,19 +21,53 @@
 #include "tcpClient.h"
 #include "risiApplication.h"
 
+#include <QHostAddress>
+#include <QTcpSocket>
 
-TcpClient::TcpClient( QObject * parent )
+/**
+ * \brief Constructor
+ * @param parent QObject
+ */
+TcpClient::TcpClient( QObject * parent, const QString &ip, int port )
     :QObject( parent ), client(new QTcpSocket(this) ), clientError()
 {
     setupConnections();
-}
 
-void TcpClient::connectToServer(const QString ip, const int port )
-{
     QHostAddress hostAddres( ip );
     client->connectToHost( hostAddres, port );
 }
 
+/**
+ * \brief returns the IP of the server which the client is connected to
+ * @return QString
+ */
+QString TcpClient::serverIP() const
+{
+    return client->peerAddress().toString();
+}
+
+/**
+ * \brief returns the port of the server which the client is connected to
+ * @return qint16
+ */
+qint16 TcpClient::serverPort() const
+{
+    return client->peerPort();
+}
+
+/**
+ * \brief Returns the last error message for this tcp client
+ * @return QString
+ */
+QString TcpClient::lastError() const
+{
+    return clientError;
+}
+
+/**
+ * \brief Creates SIGNAL-SLOTS connections
+ * \internal
+ */
 void TcpClient::setupConnections()
 {
     connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
@@ -51,6 +85,12 @@ void TcpClient::setupConnections()
 
 }
 
+/**
+ * \brief sends a message to the server
+ * @param msg QByteArray
+ * @param type qint8
+ * @param gameID qint8
+ */
 void TcpClient::sendMessage( const QByteArray msg, qint8 type, qint8 gameID )
 {
     QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type, gameID );
@@ -71,7 +111,7 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
             client->flush();
             client->close();
             clientError = QString(" Invalid network protocol format ! ");
-            RISIapplication::instance()->playerDisconnected( this );
+            /*RISIapplication::instance()->playerDisconnected( this );*///FIXME
             break;
         }
         case NetworkProtocol::InvalidVersion:
@@ -80,7 +120,7 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
             sendMessage("", 'b', -1 );
             client->close();
             clientError = QString("Invalid network protocol version ! ");
-            RISIapplication::instance()->playerDisconnected( this );
+            /*RISIapplication::instance()->playerDisconnected( this );*/ //FIXME
             break;
         }
         default:
@@ -89,11 +129,15 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
             sendMessage("", 'c', -1 );
             client->close();
             clientError = QString("Unknown network protocol ! ");
-            RISIapplication::instance()->playerDisconnected( this );
+            /*RISIapplication::instance()->playerDisconnected( this );*/ //FIXME
         }
     }
 }
 
+/**
+ * \brief this slot is called when data has arrived
+ * \internal
+ */
 void TcpClient::dataArrived()
 {
     NetworkProtocol::instance()->readData( client );
@@ -220,7 +264,6 @@ void TcpClient::socketStateChanged( QAbstractSocket::SocketState state )
     case QAbstractSocket::ConnectedState:
     {
         qDebug()<<"QAbstractSocket::ConnectedState";
-        sendMessage( "blaaa" , 'c', '-1' );
         break;
     }
     case QAbstractSocket::BoundState:

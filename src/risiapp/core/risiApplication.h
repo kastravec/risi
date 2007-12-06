@@ -21,10 +21,9 @@
 #ifndef RISIAPPLICATION_H
 #define RISIAPPLICATION_H
 
-class Protocol;
-class TcpClient;
+class PlayController;
 class RISIui;
-class HttpControler;
+class HttpController;
 class Server;
 
 class QStandardItemModel;
@@ -46,7 +45,7 @@ class RISIapplication: public QObject
 
         void gameListXMLrequest( QStandardItemModel *m );
         void saveGameListXML( QStandardItemModel *m );
-        void playerDisconnected( TcpClient *client );
+        void playerDisconnected( PlayController *playController );
         QList <QString> broadcastIPaddresses() const;
 
         qint16 serverPort() const;
@@ -68,9 +67,8 @@ class RISIapplication: public QObject
 
         RISIui *risiUI;
         Server *server;
-        Protocol *protocol;
-        HttpControler *http;
-        QList<TcpClient *> tcpClients;
+        HttpController *http;
+        QList<PlayController *> playControllers;
 
         QString serverErrors;
 

@@ -10,12 +10,13 @@
 #include "lineedit.h"
 #include <QToolButton>
 #include <QStyle>
+#include <QDebug>
 
 LineEdit::LineEdit(QWidget *parent)
     : QLineEdit(parent)
 {
     clearButton = new QToolButton(this);
-    QPixmap pixmap("fileclose.png");
+    QPixmap pixmap("resources/icons/remove22.png");
     clearButton->setIcon(QIcon(pixmap));
     clearButton->setIconSize(pixmap.size());
     clearButton->setCursor(Qt::ArrowCursor);

@@ -25,9 +25,8 @@
 
 #include "server.h"
 #include "risiUI.h"
-#include "httpControler.h"
-#include "tcpClient.h"
-#include "protocol.h"
+#include "httpController.h"
+#include "playcontroller.h"
 
 #include "gameListXML.h"
 #include "risiApplication.h"
@@ -41,7 +40,7 @@ RISIapplication* RISIapplication::inst = 0;
  * @param parent parent QObject
  */
 RISIapplication::RISIapplication( QObject *parent )
-    :QObject( parent ), protocol( Protocol::instance() ), http ( HttpControler::instance() ), tcpClients(), serverErrors(), xmlFile( new QFile("gameList.xml") )
+    :QObject( parent ), http ( HttpController::instance() ), playControllers(), serverErrors(), xmlFile( new QFile("gameList.xml") )
 {
 }
 
@@ -101,11 +100,8 @@ RISIapplication::~RISIapplication()
 
     server->close();
     delete server;
-    delete protocol;
 
     delete Server::instance();
-    delete Protocol::instance();
-    delete NetworkProtocol::instance();
 }
 
 /**
@@ -145,11 +141,11 @@ void RISIapplication::setupConnections()
  * \brief when a player is disconnected this function is called, so this client will be removed from the list and notifying the other users
  * @param client TcpClient *
  */
-void RISIapplication::playerDisconnected( TcpClient *client )
+void RISIapplication::playerDisconnected( PlayController *playController )
 {
-    QString error = client->lastError();
+    QString error = playController->lastError();
 
-    int instances = tcpClients.removeAll( client );
+    int instances = playControllers.removeAll( playController );
 
     if( instances != 0 )
         QMessageBox::warning(0, tr("Warning ! "), tr(" Player disconnected due to: ")+error+" !" );
@@ -181,16 +177,14 @@ void RISIapplication::goOnlineSlot( const QString nickName, const bool onlineSta
 void RISIapplication::connectToServer( const QString ip, const int port ) //TODO docs ?
 {
     if( !isConnectedTo(ip, port) )
-    {
-        tcpClients.append( new TcpClient( this ) );
-        tcpClients.last()->connectToServer( ip, port );
-    }
+        playControllers.append( new PlayController( this, ip, port ) );
     else
         QMessageBox::warning(0, tr("WARNING ! "), tr("Seems that you are already connected to: ")+ip+" !!" );
 }
 
 /**
  * \brief this functions checks whether the user is already connected to the given ip and port
+ * \internal
  * @param ip QString
  * @param port int
  * @return bool
@@ -198,13 +192,13 @@ void RISIapplication::connectToServer( const QString ip, const int port ) //TODO
 bool RISIapplication::isConnectedTo(const QString ip, const int port )
 {
     //checks if there are any connections to any server
-    if( tcpClients.count() > 0 )
+    if( playControllers.count() > 0 )
     {
         //looping through the clients
-        for( int i = 0; i < tcpClients.count(); ++i )
+        for( int i = 0; i < playControllers.count(); ++i )
         {
-            TcpClient *client = tcpClients.at( i );
-            if( client->serverIP() == ip && client->serverPort() == port )
+            PlayController *playController = playControllers.at( i );
+            if( playController->serverIP() == ip && playController->serverPort() == port )
                 return true;
         }
     }

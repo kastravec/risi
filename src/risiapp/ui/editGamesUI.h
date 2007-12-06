@@ -22,19 +22,18 @@
 #define EDITGAMESUI_H
 
 #include <QDialog>
-#include <QTextEdit>
-#include <QPushButton>
-#include <QTreeView>
-#include <QAction>
 
 class QStandardItemModel;
+class QAction;
+class QTextEdit;
+class QTreeView;
 
 /**
 This is a UI class. This class is responsible for adding,removing and editting
 games that are about to be installed locally.
 */
 
-class EditGamesUI : public QDialog
+class EditGamesDialog : public QDialog
 {
     Q_OBJECT
 
@@ -43,8 +42,8 @@ class EditGamesUI : public QDialog
      * Default constructor
      * @param parent
      */
-        EditGamesUI(QStandardItemModel *m , QWidget *parent = 0 );
-        ~EditGamesUI();
+        EditGamesDialog(QStandardItemModel *m , QWidget *parent = 0 );
+        ~EditGamesDialog();
 
     private slots:
         void addGame();

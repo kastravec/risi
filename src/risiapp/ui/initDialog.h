@@ -22,12 +22,12 @@
 #define INITDIALOG_H
 
 #include <QDialog>
-#include <QSpinBox>
-#include <QLineEdit>
 
 class QRadioButton;
 class QPushButton;
 class QGroupBox;
+class QSpinBox;
+class LineEdit;
 
 class InitDialog: public QDialog
 {
@@ -36,8 +36,8 @@ class InitDialog: public QDialog
     public:
         InitDialog ( QWidget *parent = 0 );
 
-        const QString nickName() const { return nickNameLineEdit->text(); }
-        const int serverPort() const { return portSpinBox->value(); }
+        const QString nickName() const;
+        const int serverPort() const;
 
     private slots:
         void advancedOptionsTriggered();
@@ -49,7 +49,7 @@ class InitDialog: public QDialog
         void writeSettings();
 
         QGroupBox *advancedOptionsWidget;
-        QLineEdit *nickNameLineEdit;
+        LineEdit *nickNameLineEdit;
         QSpinBox *portSpinBox;
         QRadioButton *advancedOptionsButton;
         QPushButton *okButton;

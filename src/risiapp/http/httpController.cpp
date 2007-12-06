@@ -18,35 +18,32 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef SETTINGSUI_H
-#define SETTINGSUI_H
+// #include <QNetworkAccessManager>
+#include "httpController.h"
 
-#include <QDialog>
-#include <QSpinBox>
+HttpController *HttpController::inst = 0;
 
-class QModelIndex;
-
-//FIXME BETTER DESIGN FOR THIS CLASS
-
-class SettingsDialog: public QDialog
+HttpController::HttpController( QObject *parent )
+    :QObject( parent )
 {
-    Q_OBJECT
+}
 
-    public:
-        SettingsDialog(QWidget *parent = 0);
+HttpController *HttpController::instance()
+{
+    if( inst == 0 )
+        inst = new HttpController;
 
-    private slots:
-        void settingsForItem(const QModelIndex &);
-        void applyButtonClicked ();
-        void okButtonClicked();
+    return inst;
+}
 
-    private:
-        QWidget * createListOfSettings() ;
-        QLayout * createButtons();
-        QSpinBox *portSpin;
+bool HttpController::goOnline( const QString nick )
+{
+    nickName = nick;
+    return true;
+}
 
-        void readSettings();
-        void writeSettings();
-};
+bool HttpController::goOffline()
+{
+    return true;
+}
 
-#endif

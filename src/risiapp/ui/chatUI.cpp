@@ -19,34 +19,45 @@
  ***************************************************************************/
 
 #include "chatUI.h"
+#include "lineedit.h"
+
 #include <QSplitter>
+#include <QTextEdit>
+#include <QLineEdit>
+#include <QListView>
+#include <QHBoxLayout>
+#include <QEvent>
+#include <QKeyEvent>
 
-
+/**
+ * \brief Constructor
+ * @param parent QWidget
+ */
 ChatUI::ChatUI(QWidget *parent)
     :QWidget(parent)
 {
     initUI();
-
 }
 
+/**
+ * \brief Initializes the UI components
+ */
 void ChatUI::initUI()
 {
-    sendButton = new QPushButton(tr("&Send"), this);
-    clearButton = new QPushButton(tr("&Clear"), this);
-    mainChatWindow = new QTextEdit (this);
+    chatWindow = new QTextEdit (this);
+    chatWindow->setReadOnly( true );
+
     playerListWindow = new QListView (this);
-    chatInputWindow = new QLineEdit(this);
+    inputLineEdit = new LineEdit(this);
 
     QSplitter *splitter = new QSplitter(this);
-    splitter->addWidget( mainChatWindow );
+    splitter->addWidget( chatWindow );
     splitter->addWidget( playerListWindow );
     splitter->setStretchFactor( 0, 5 );
     splitter->setStretchFactor( 1, 1);
 
     QHBoxLayout *hlayout = new QHBoxLayout;
-    hlayout->addWidget( chatInputWindow );
-    hlayout->addWidget(sendButton);
-    hlayout->addWidget(clearButton);
+    hlayout->addWidget( inputLineEdit );
 
     QVBoxLayout *vlayout = new QVBoxLayout;
     vlayout->addWidget( splitter);
@@ -54,3 +65,45 @@ void ChatUI::initUI()
 
     setLayout(vlayout);
 }
+
+/**
+ * \brief This event filter is installed on inputLineEdit- the line edit used to enter chat messages
+ * @param watched QObject
+ * @param event QEvent
+ * @return bool
+ */
+bool ChatUI::eventFilter ( QObject * watched, QEvent * event )
+{
+    if( watched )
+    {
+        LineEdit *lineEdit = qobject_cast<LineEdit *>( watched );
+        if( lineEdit )
+            inputLineEditEvents( event );
+    }
+
+}
+
+/**
+ * \brief This function processes all the events for inputLineEdit -the line edit used to enter chat messages
+ * @param event QEvent
+ */
+void ChatUI::inputLineEditEvents( QEvent *event )
+{
+    switch ( event->type() )
+    {
+        case QEvent::KeyPress:
+        {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *> ( event );
+            if( keyEvent->key() == QKeyEvent::Enter )
+                emit sendChatMessageRequest( inputLineEdit->text() );
+
+            return;
+        }
+        default:
+        {
+            return;
+        }
+    }
+
+}
+
