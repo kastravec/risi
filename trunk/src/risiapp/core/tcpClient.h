@@ -21,22 +21,22 @@
 #ifndef TCPCLIENT_H
 #define TCPCLIENT_H
 
-#include <QHostAddress>
-#include <QTcpSocket>
 #include "networkProtocol.h"
+#include <QAbstractSocket>
+
+class QTcpSocket;
 
 class TcpClient: public QObject
 {
     Q_OBJECT
 
     public:
-        TcpClient( QObject *parent = 0 );
+        TcpClient( QObject *parent = 0, const QString &ip = QString(), int port = 0 );
 
         void sendMessage( const QByteArray msg, qint8 type, qint8 gameID );
-        QString serverIP() const { return client->peerAddress().toString(); }
-        qint16 serverPort() const { return client->peerPort(); }
-        QString lastError() const { return clientError; }
-        void connectToServer( const QString server, const int port );
+        QString serverIP() const;
+        qint16 serverPort() const;
+        QString lastError() const;
 
     signals:
         void messageArrived( const QByteArray msg, const qint8 msgType, const qint8 gameID );

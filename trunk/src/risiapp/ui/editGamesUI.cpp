@@ -26,6 +26,10 @@
 #include <QDebug>
 #include <QStandardItemModel>
 #include <QMessageBox>
+#include <QTextEdit>
+#include <QPushButton>
+#include <QTreeView>
+#include <QAction>
 
 #include "editGamesUI.h"
 
@@ -63,7 +67,7 @@ class NewGameDialog : public QDialog
         QTextEdit *descEditor;
 };
 
-EditGamesUI::EditGamesUI(QStandardItemModel *m, QWidget *parent )
+EditGamesDialog::EditGamesDialog(QStandardItemModel *m, QWidget *parent )
     :QDialog( parent ), maybeSaveXML( false ), model( m )
 {
     setupActions();
@@ -73,10 +77,10 @@ EditGamesUI::EditGamesUI(QStandardItemModel *m, QWidget *parent )
     gameListView->setModel( model );
 }
 
-EditGamesUI::~EditGamesUI()
+EditGamesDialog::~EditGamesDialog()
 {}
 
-void EditGamesUI::addGame()
+void EditGamesDialog::addGame()
 {
     NewGameDialog newGameDialog;
     int result = newGameDialog.exec();
@@ -106,7 +110,7 @@ void EditGamesUI::addGame()
     }
 }
 
-void EditGamesUI::removeGame()
+void EditGamesDialog::removeGame()
 {
     QItemSelectionModel *selectionModel = gameListView->selectionModel();
     QModelIndexList selectedItems = selectionModel->selectedIndexes();
@@ -125,7 +129,7 @@ void EditGamesUI::removeGame()
 /**
  *
  */
-void EditGamesUI::addFile() //FIXME add files only for selected items ....stupid
+void EditGamesDialog::addFile() //FIXME add files only for selected items ....stupid
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Add script files for your game"));
     for( int i = 0; i < fileNames.count(); ++i )
@@ -138,7 +142,7 @@ void EditGamesUI::addFile() //FIXME add files only for selected items ....stupid
     }
 }
 
-void EditGamesUI::removeFile()
+void EditGamesDialog::removeFile()
 {
     QItemSelectionModel *selectModel = gameListView->selectionModel();
     QModelIndexList selectedItems = selectModel->selectedIndexes();
@@ -158,7 +162,7 @@ void EditGamesUI::removeFile()
  * initializes all child widgets
  * lays out the widgets in layouts and splitters
  */
-void EditGamesUI::setupUI()//TODO better UI is needed :)
+void EditGamesDialog::setupUI()//TODO better UI is needed :)
 {
     /*north main layout*/
     QHBoxLayout *mainHlayout = new QHBoxLayout;
@@ -204,7 +208,7 @@ void EditGamesUI::setupUI()//TODO better UI is needed :)
 /**
  * initializes actions and sets them up
  */
-void EditGamesUI::setupActions()
+void EditGamesDialog::setupActions()
 {
     addGameAction = new QAction( tr("add"), this );
     removeGameAction = new QAction( tr("remove"), this);
@@ -213,7 +217,7 @@ void EditGamesUI::setupActions()
     saveEditorAction = new QAction( tr("Save"), this);
 }
 
-void EditGamesUI::setupConnections()
+void EditGamesDialog::setupConnections()
 {
     connect( okButton, SIGNAL(released()), this, SLOT(accept()) );
     connect( cancelButton, SIGNAL(released()), this, SLOT(reject()) );

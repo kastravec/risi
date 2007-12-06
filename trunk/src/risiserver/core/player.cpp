@@ -18,7 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "protocol.h"
+#include "serverprotocol.h"
 #include "player.h"
 #include "server.h"
 #include "game.h"
@@ -31,7 +31,7 @@
  * @param parent Parent
  */
 Player::Player( QTcpSocket *client, QObject *parent )
-    :QObject( parent ), connectionHandler( client, this ), games(), nick( "player"+QString::number( client->socketDescriptor()*2 ) ), protocol( Protocol::instance() )
+    :QObject( parent ), connectionHandler( client, this ), games(), nick( "player"+QString::number( client->socketDescriptor()*2 ) ), protocol( ServerProtocol::instance() )
 {
     setupConnections();
 }

@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci   *
- *   psaraci@gmail.com   *
+ *   Copyright (C) 2007 by Petref Saraci                                   *
+ *   psaraci@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,35 +18,37 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef SETTINGSUI_H
-#define SETTINGSUI_H
+#include "playcontroller.h"
 
-#include <QDialog>
-#include <QSpinBox>
 
-class QModelIndex;
-
-//FIXME BETTER DESIGN FOR THIS CLASS
-
-class SettingsDialog: public QDialog
+/**
+ * \class PlayController
+ * \brief Constructor
+ * @param parent QObject
+ * @param ip const QString &
+ * @param port int
+ */
+PlayController::PlayController( QObject *parent, const QString &ip, int port )
+    :QObject( parent ), tcpClient( this, ip, port )
 {
-    Q_OBJECT
+}
 
-    public:
-        SettingsDialog(QWidget *parent = 0);
+/**
+ * \brief returns the last error occured on PlayController
+ * @return QString
+ */
+const QString &PlayController::lastError()
+{
+    return tcpClient.lastError();
+}
 
-    private slots:
-        void settingsForItem(const QModelIndex &);
-        void applyButtonClicked ();
-        void okButtonClicked();
+const QString &PlayController::serverIP()
+{
+    return tcpClient.serverIP();
+}
 
-    private:
-        QWidget * createListOfSettings() ;
-        QLayout * createButtons();
-        QSpinBox *portSpin;
+const qint16 &PlayController::serverPort()
+{
+    return tcpClient.serverPort();
+}
 
-        void readSettings();
-        void writeSettings();
-};
-
-#endif

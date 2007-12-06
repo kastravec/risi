@@ -26,8 +26,15 @@
 #include <QStatusBar>
 #include <QDebug>
 #include <QSettings>
+#include <QDockWidget>
+#include <QHBoxLayout>
+#include <QPushButton>
 
-#include "core/risiApplication.h"
+#include "chatUI.h"
+#include "gameListUI.h"
+#include "editGamesUI.h"
+
+#include "risiApplication.h"
 #include "settingsUI.h"
 #include "risiUI.h"
 #include "hostGameDialog.h"
@@ -36,6 +43,12 @@
 class ConnectToIPDialog: public QDialog
 {
     public:
+        /**
+         * \class ConnectToIPDialog
+         * \internal
+         * \brief Constructor, this dialog is used to get the IP&port of the server the player wants to connect
+         * @param parent QWidget
+         */
         ConnectToIPDialog( QWidget * parent = 0 )
         :QDialog( parent ), IPlineEdit( new QLineEdit( this) ), portSpinBox(new QSpinBox(this) )
         {
@@ -75,8 +88,13 @@ class ConnectToIPDialog: public QDialog
         QSpinBox *portSpinBox;
 };
 
+/**
+ *\class RISIui
+ *\brief The main UI, big class big responsibilities
+ * @param parent QWidget
+ */
 RISIui::RISIui(QWidget *parent)
-    :QMainWindow(parent), nickNameCombobox( new QComboBox ), onlineStatus( false), appStatus( new QLabel( tr("Server not ready! "), this ) ), model( new QStandardItemModel )
+    :QMainWindow(parent), nickNameCombobox( new QComboBox ), onlineStatus( false), appStatus( new QLabel( tr("Server not ready! "), this ) ), model( new QStandardItemModel ), currentPlayController( 0 )
 {
     resize( 800,600);
     setAnimated(true);
@@ -92,7 +110,7 @@ RISIui::RISIui(QWidget *parent)
 }
 
 /**
- * creates the toolbars
+ * \brief creates the toolbars
  */
 void RISIui::createToolBars()
 {
@@ -111,6 +129,10 @@ void RISIui::createToolBars()
 
 }
 
+/**
+ * \brief Creates the dockwidgets for the main window
+ * @param type DockWidgetType
+ */
 void RISIui::createDockWidget( DockWidgetType type )
 {
     switch (type)
@@ -143,6 +165,9 @@ void RISIui::createDockWidget( DockWidgetType type )
     }
 }
 
+/**
+ * \brief Creates the central widget of the mainwindow
+ */
 void RISIui::createCentralWidget()
 {
     QWidget *centralWidget = new QWidget;
@@ -157,6 +182,9 @@ void RISIui::createCentralWidget()
     setCentralWidget(centralWidget);
 }
 
+/**
+ * \brief Creates the statusBar of the mainwindow
+ */
 void RISIui::createStatusBar()
 {
     QStatusBar *statBar = statusBar();
@@ -174,7 +202,7 @@ void RISIui::createStatusBar()
 }
 
 /**
- * creates and sets up the actions
+ * \brief creates and sets up the actions
  */
 void RISIui::setupActions()
 {
@@ -222,6 +250,9 @@ void RISIui::setupActions()
     aboutRisiAction = new QAction ( tr("About risi"), this );
 }
 
+/**
+ * \brief Creates the menus
+ */
 void RISIui::createMenus()
 {
     QMenuBar *mainMenuBar = menuBar();
@@ -248,16 +279,36 @@ void RISIui::createMenus()
     mainMenuBar->addMenu( viewMenu );
     mainMenuBar->addMenu(helpMenu);
 }
- void RISIui::closeEvent( QCloseEvent *)
+
+/**
+ * \brief Creates the SIGNAL-SLOT connections
+ */
+void setupConnections()
+{
+    connect();
+}
+
+ /**
+  * \brief Intersecting the close event
+  * @param  QCloseEvent
+  */
+void RISIui::closeEvent( QCloseEvent *)
 {
 //     exitActionTriggered();
 }
 
+/**
+ * \brief called when the settingsAction is triggered :)
+ */
 void RISIui::settingsActionTriggered()
 {
-    SettingsUI settingsDialog(this);
+    SettingsDialog settingsDialog(this);
     settingsDialog.exec();
 }
+
+/**
+ * \brief
+ */
 void RISIui::exitActionTriggered()
 {
 
@@ -266,17 +317,23 @@ void RISIui::exitActionTriggered()
         close();
 }
 
+/**
+ * \brief
+ */
 void RISIui::addRemoveGameActTriggered()
 {
     RISIapplication::instance()->gameListXMLrequest( model );
 
-    EditGamesUI editGamesDialog( model , this );
+    EditGamesDialog editGamesDialog( model , this );
     int result = editGamesDialog.exec();
 
     if ( result == QDialog::Accepted )
             RISIapplication::instance()->saveGameListXML( model );
 }
 
+/**
+ * \brief
+ */
 void RISIui::hostGameActionTriggered()
 {
     if( model->rowCount() == 0 )
@@ -288,6 +345,9 @@ void RISIui::hostGameActionTriggered()
         emit chosenGameToHost( hostGameDialog.chosenGame() );
 }
 
+/**
+ * \brief
+ */
 void RISIui::onlineActionTriggered()
 {
     onlineStatus = onlineAction->isChecked();
@@ -304,6 +364,9 @@ void RISIui::onlineActionTriggered()
     onlineAction->setChecked( onlineStatus );
 }
 
+/**
+ * \brief
+ */
 void RISIui::connectToIPActTriggered()
 {
     ConnectToIPDialog IPdilaog;
@@ -311,13 +374,14 @@ void RISIui::connectToIPActTriggered()
         emit connectToIPSignal( IPdilaog.ip(), IPdilaog.port() );
 }
 
+/**
+ * \brief
+ */
 void RISIui::aboutRisiActionTriggered()
-{
-
-}
+{}
 
 /**
- *
+ * \brief
  */
 void RISIui::serverInfoActionTriggered()
 {
@@ -359,6 +423,9 @@ void RISIui::serverInfoActionTriggered()
     dialog.exec();
 }
 
+/**
+ * \brief
+ */
 void RISIui::updateOnlineStatusSlot( const bool online )
 {
     onlineStatus = online;
@@ -383,11 +450,17 @@ void RISIui::updateOnlineStatusSlot( const bool online )
     onlineStatusLabel->setText( label );
 }
 
+/**
+ * \brief
+ */
 void RISIui::playerDisconnectedSlot( const QString reason)
 {
     QMessageBox::warning ( this, tr("Player disconnected: "), tr(" Player disconnected due to: ") + reason );
 }
 
+/**
+ * \brief
+ */
 void RISIui::readSettings()
 {
     QSettings settings;
@@ -396,8 +469,28 @@ void RISIui::readSettings()
     settings.endGroup();
 }
 
+/**
+ * \brief
+ */
 void RISIui::writeSettings()
 {
 }
 
+/**
+ * \brief currentPlayController property: Returns the currentPlayController
+ * @return PlayController *
+ */
+PlayController * RISIui::currentPlayController() const
+{
+    return currentPlayer;
+}
+
+/**
+ * \brief currentPlayController property: Sets the currentPlayController
+ * @param PlayController *
+ */
+void RISIui::setCurrentPlayController( PlayController * playController )
+{
+    currentPlayer = playController;
+}
 

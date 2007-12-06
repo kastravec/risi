@@ -25,7 +25,6 @@
 #include <QMessageBox>
 #include <QStandardItemModel>
 
-#include "core/risiApplication.h"
 #include "hostGameDialog.h"
 
 /**

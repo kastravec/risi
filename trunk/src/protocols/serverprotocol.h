@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci   *
- *   psaraci@gmail.com   *
+ *   Copyright (C) 2007 by Petref Saraci                                   *
+ *   psaraci@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,27 +18,36 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef HTTPCONTROLER_H
-#define HTTPCONTROLER_H
+#ifndef PROTOCOL_H
+#define PROTOCOL_H
 
-#include <QHttp>
+#include <QByteArray>
+class Game;
+class Server;
 
-class HttpControler: public QObject
+class ServerProtocol
 {
-    Q_OBJECT
-
     public:
-        static HttpControler *instance();
-        bool goOnline( const QString nick );
-        bool goOffline();
+        static ServerProtocol*instance();
+
+        enum MessageType {
+                            GameMsg = 'g',
+                            Chat = 'c',
+                            NickName = 'n',
+                            HostRequest = 'h',
+                            HostCancel = 'l',
+                            JoinGame = 'j',
+                            LeaveGame = 'a'
+                         };
+
+        void parseMessageForServer( const QByteArray msg, const qint8 msgType );
+        void parseMessageForGame( const QByteArray msg, const qint8 msgType, Game *game );
 
     private:
-        HttpControler( QObject *parent = 0 );
-        static HttpControler *inst;
+        ServerProtocol();
 
-        QHttp http;
-        QString errors;
-        QString nickName;
+        Server *server;
+        static ServerProtocol *inst;
 };
 
 #endif

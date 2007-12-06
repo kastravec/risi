@@ -21,25 +21,31 @@
 #ifndef CHATUI_H
 #define CHATUI_H
 
-#include <QTextEdit>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QListView>
-#include <QHBoxLayout>
+#include <QWidget>
+
+class QTextEdit;
+class QListView;
+class QPushButton;
+class LineEdit;
 
 class ChatUI: public QWidget
 {
+    Q_OBJECT
+
     public:
         ChatUI(QWidget *parent = 0);
+
+    signals:
+        void sendChatMessageRequest( const QString & msg );
+
     private:
-        QTextEdit *mainChatWindow;
-        QLineEdit *chatInputWindow;
+        QTextEdit *chatWindow;
+        LineEdit *inputLineEdit;
         QListView *playerListWindow;
-        QPushButton * sendButton;
-        QPushButton * clearButton;
 
+        bool eventFilter ( QObject * watched, QEvent * event );
+        void inputLineEditEvents( QEvent *event );
         void initUI();
-
 };
 
 #endif

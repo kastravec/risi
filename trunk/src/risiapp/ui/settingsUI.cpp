@@ -30,7 +30,7 @@
 
 //FIXME THIS CLASS WILL BE REDISGNED
 
-SettingsUI::SettingsUI(QWidget *parent )
+SettingsDialog::SettingsDialog(QWidget *parent )
     :QDialog(parent), portSpin(new QSpinBox(this) )
 {
     portSpin->setRange( 0, 9999 );
@@ -66,7 +66,7 @@ SettingsUI::SettingsUI(QWidget *parent )
  * creates the left side of the ui form. Basically creates a listview with a several items
  * @return
  */
-QWidget * SettingsUI::createListOfSettings()
+QWidget * SettingsDialog::createListOfSettings()
 {
     QListView * listViewSettings = new QListView(this);
     listViewSettings->setEditTriggers( QAbstractItemView::NoEditTriggers );
@@ -86,7 +86,7 @@ QWidget * SettingsUI::createListOfSettings()
     return listViewSettings;
 }
 
-QLayout * SettingsUI::createButtons()
+QLayout * SettingsDialog::createButtons()
 {
     QHBoxLayout *layout = new QHBoxLayout;
     QPushButton *okButton = new QPushButton( tr("Ok"), this);
@@ -104,22 +104,22 @@ QLayout * SettingsUI::createButtons()
     return layout;
 }
 
-void SettingsUI::settingsForItem( const QModelIndex & /*item*/)
+void SettingsDialog::settingsForItem( const QModelIndex & /*item*/)
 {
 }
 
-void SettingsUI::applyButtonClicked()
+void SettingsDialog::applyButtonClicked()
 {
     writeSettings();
 }
 
-void SettingsUI::okButtonClicked()
+void SettingsDialog::okButtonClicked()
 {
     writeSettings();
     accept();
 }
 
-void SettingsUI::readSettings()
+void SettingsDialog::readSettings()
 {
     QSettings settings;
     settings.beginGroup( "Server" );
@@ -134,7 +134,7 @@ void SettingsUI::readSettings()
         portSpin->setValue( 9999 );
 }
 
-void SettingsUI::writeSettings()
+void SettingsDialog::writeSettings()
 {
     QSettings settings;
 

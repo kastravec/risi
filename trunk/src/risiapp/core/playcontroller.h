@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci   *
- *   psaraci@gmail.com   *
+ *   Copyright (C) 2007 by Petref Saraci                                   *
+ *   psaraci@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,32 +18,23 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "httpControler.h"
+#ifndef PLAYCONTROLER_H
+#define PLAYCONTROLER_H
 
-HttpControler *HttpControler::inst = 0;
+#include <QObject>
+#include "tcpClient.h"
 
-
-HttpControler::HttpControler( QObject *parent )
-    :QObject( parent )
+class PlayController: public QObject
 {
-}
+    public:
+        PlayController( QObject *parent = 0, const QString &ip = QString(), int port = 0 );
 
-HttpControler *HttpControler::instance()
-{
-    if( inst == 0 )
-        inst = new HttpControler;
+        const QString &lastError();
+        const QString &serverIP();
+        const qint16 &serverPort();
 
-    return inst;
-}
+    private:
+        TcpClient tcpClient;
+};
 
-bool HttpControler::goOnline( const QString nick )
-{
-    nickName = nick;
-    return true;
-}
-
-bool HttpControler::goOffline()
-{
-    return true;
-}
-
+#endif
