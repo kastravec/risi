@@ -19,21 +19,19 @@
  ***************************************************************************/
 
 #include <QDataStream>
-#include <QTcpSocket>
+#include <QAbstractSocket>
 
 #include <qendian.h>
 #include "networkProtocol.h"
 
-NetworkProtocol *NetworkProtocol::inst = 0;
-
 /**
+ * \class NetworkProtocol
  * \brief Constructor
  * @param parent  QObject
  */
 NetworkProtocol::NetworkProtocol( QObject *parent )
-    :QObject( parent ), packetSize(-1), format(10), version(11)
-{
-}
+    :QObject( parent ), packetSize(-1), format(10), version(11), error()
+{}
 
 /**
  * \brief Destructor
@@ -44,48 +42,28 @@ NetworkProtocol::~NetworkProtocol()
 }
 
 /**
- * \brief retuns the instance of NetworkProtocol
- * @return NetworkProtocol instance
- */
-NetworkProtocol *NetworkProtocol::instance()
-{
-    if( inst == 0)
-        inst = new NetworkProtocol;
-
-    return inst;
-}
-
-/**
  * \brief this slot is called when data are available for reading
  * @param client QTcpSocket
  */
-void NetworkProtocol::readData( QTcpSocket * client )
+void NetworkProtocol::readData( QAbstractSocket * client )
 {
     //read until there are no bytes available basically
     while (client->bytesAvailable() > 0)
     {
-        qDebug()<<"1";
-
         if (packetSize == -1)
         {
             //make sure that there are available data to read; at this stage, is expected more than 4 bytes
             if( client->bytesAvailable() < sizeof(qint32) )
                 return;
 
-            qDebug()<<"2";
             //read the packet size first
             client->read(reinterpret_cast<char*>(&packetSize), sizeof(qint32));
             //changing the byte order for the network to host
             packetSize = qFromBigEndian( packetSize );
         }
-
-        qDebug()<<"3";
-
         //make sure that there are the whole packet is available; basically check if the entire packet is available
         if (client->bytesAvailable() < packetSize)
             return;
-
-        qDebug()<<"4";
 
         //reseting the packet size since it ensured that there a whole packet is available
         packetSize = -1;
@@ -98,22 +76,21 @@ void NetworkProtocol::readData( QTcpSocket * client )
         inStream >> format;
         if( format != format )
         {
-            qDebug()<<"5";
-            emit networkProtocolError( InvalidFormat );
+            error = tr(" Invalid protocol format ");
+            emit networkProtocolError();
             return;
         }
-        qDebug()<<"6";
+
         //read and check the protocol version
         qint32 vers;
         inStream >> vers;
 
         if( vers != version )
         {
-            qDebug()<<"7";
-            emit networkProtocolError( InvalidVersion );
+            error = tr(" Invalid protocol version ");
+            emit networkProtocolError();
             return;
         }
-        qDebug()<<"8";
 
         //read protocol header:
         // read type of message

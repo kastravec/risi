@@ -23,18 +23,44 @@
 
 #include <QObject>
 #include "tcpClient.h"
+#include "board.h"
+#include "clientprotocol.h"
 
-class PlayController: public QObject
+class RISIui;
+
+class PlayController : public QObject
 {
-    public:
-        PlayController( QObject *parent = 0, const QString &ip = QString(), int port = 0 );
+    Q_OBJECT
+    Q_PROPERTY( bool connected READ isConnected )
 
-        const QString &lastError();
-        const QString &serverIP();
-        const qint16 &serverPort();
+    public:
+        PlayController( QObject *parent = 0, RISIui *ui = 0, const QString &ip = QString(), int pt = 0 );
+        ~PlayController();
+
+        bool isConnected() const;
+        void displayChatMessage( const QString &msg );
+        void sendNickName();
+        QString lastTcpError() const;
+        QString serverIP() const;
+        qint16 serverPort() const;
+
+    public slots:
+        void sendChatMessage( const QString & msg );
+
+        void tcpClientConnected();
+        void tcpClientDisconnected();
 
     private:
-        TcpClient tcpClient;
+        void setupConnections();
+
+        Board board;
+        RISIui *risiUI;
+        ClientProtocol protocol;
+        int gameID;
+        bool connectedToServer;
+
+        QString ipAddress;
+        qint16 port;
 };
 
 #endif

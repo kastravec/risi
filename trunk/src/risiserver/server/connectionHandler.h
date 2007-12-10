@@ -22,9 +22,8 @@
 #define CONNECTIONHANDLER_H
 
 #include "networkProtocol.h"
-#include <QObject>
-#include <QTcpSocket>
-
+#include <QAbstractSocket>
+class QTcpSocket;
 
 /**
  * list of message types:
@@ -38,7 +37,7 @@ class ConnectionHandler: public QObject
     Q_OBJECT
 
     public:
-        ConnectionHandler( QTcpSocket *sock = 0, QObject *parent = 0);
+        ConnectionHandler( QObject *parent = 0, QTcpSocket *sock = 0 );
         ~ConnectionHandler();
 
         const QTcpSocket *socket() const;
@@ -52,13 +51,13 @@ class ConnectionHandler: public QObject
 
     private slots:
         void dataArrived();
-        void networkProtocolErrorSlot( NetworkProtocol::ProtocolError err );
+        void networkProtocolErrorSlot();
         void socketErrors( QAbstractSocket::SocketError errors);//FIXME do i need this?
         void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
 
     private:
         void setupConnections();
-
+        NetworkProtocol networkProtocol;
         QTcpSocket *client;
         QString clientError;
 };

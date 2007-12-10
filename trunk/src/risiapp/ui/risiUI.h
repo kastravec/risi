@@ -29,6 +29,7 @@ class QComboBox;
 class QLabel;
 class GameListUI;
 class ChatUI;
+class BoardView;
 class PlayController;
 
 class RISIui: public QMainWindow
@@ -38,9 +39,10 @@ class RISIui: public QMainWindow
     public:
         RISIui(QWidget *parent = 0);
 
-        Q_PROPERTY( QString currentPlayController READ currentPlayController WRITE setCurrentPlayController SCRIPTABLE false USER true )
-
-        RISIui *currentPlayController() const;
+        PlayController *currentPlayController() const;
+        void setCurrentPlayController( PlayController * playController );
+        void displayChatMessage( const QString &msg );
+        void initConnectionProgressDlg();
 
     private slots:
         void settingsActionTriggered();
@@ -58,7 +60,7 @@ class RISIui: public QMainWindow
         void chosenGameToHost( const QString gameName );
         void saveGameListXMLRequest( QStandardItemModel *m );
         void gameListXMLrequest( QStandardItemModel *m );
-        void connectToIPSignal( const QString ip, const int port );
+        void connectToIPSignal( const QString ip, int port );
         void goOnlineSignal( const QString nickName, const bool online );
 
     protected:
@@ -76,6 +78,7 @@ class RISIui: public QMainWindow
         void writeSettings();
         void setupConnections();
 
+        BoardView *boardView;
         ChatUI *chatUI;
         GameListUI *gameListUI;
         QTabWidget *gameWidgetContainer;

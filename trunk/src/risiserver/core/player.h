@@ -21,41 +21,39 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-class Game;
-class ServerProtocol;
-class QTcpSocket;
-
 #include "connectionHandler.h"
+#include "serverprotocol.h"
+
+class Game;
+class QTcpSocket;
 
 class Player : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY( QString nickname READ nickname WRITE setNickname SCRIPTABLE true USER true )
 
     public:
         Player( QTcpSocket *client, QObject *parent = 0 );
+        ~Player();
 
-        Q_PROPERTY( QString nickname READ nickname WRITE setNickname SCRIPTABLE true USER true )
-
-        const QTcpSocket * connectionSocket();
+        QTcpSocket * connectionSocket() const;
 
         QString nickname() const;
         void setNickname( const QString & name );
 
         void addGame( Game *gm );
-        void sendMessage( const QByteArray msg, const qint8 msgType );
+        void sendChatMessage( const QByteArray msg );
 
     private slots:
         void disconnected();
-        void messageArrivedSlot( const QByteArray msg, const qint8 msgType, const qint8 gameID );
 
     private:
         void setupConnections() const;
         Game *gameForID( qint8 iD );
 
-        ConnectionHandler connectionHandler;
         QList < Game *> games;
         QString nick;
-        ServerProtocol *protocol;
+        ServerProtocol protocol;
 };
 
 #endif

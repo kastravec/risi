@@ -21,11 +21,10 @@
 #ifndef RISIAPPLICATION_H
 #define RISIAPPLICATION_H
 
-class PlayController;
 class RISIui;
 class HttpController;
 class Server;
-
+class PlayController;
 class QStandardItemModel;
 class QIODevice;
 
@@ -34,45 +33,52 @@ class QIODevice;
 class RISIapplication: public QObject
 {
     Q_OBJECT
+    Q_ENUMS( AppState )
+    Q_PROPERTY( QString nickname READ nickname WRITE setNickname SCRIPTABLE true USER true )
+    Q_PROPERTY( AppState state READ state WRITE setState SCRIPTABLE true USER true )
 
     public:
         ~RISIapplication();
 
+        enum AppState { Ready = 1, Busy = 2, Idle = 3, Problem = 4 };
+
+        QString nickname() const;
+        void setNickname( const QString & nm );
+        AppState state() const;
+        void setState( AppState st );
+
         void initUI();
-        void initServer();
-
+        bool initServer();
         static RISIapplication* instance();
-
         void gameListXMLrequest( QStandardItemModel *m );
         void saveGameListXML( QStandardItemModel *m );
         void playerDisconnected( PlayController *playController );
         QList <QString> broadcastIPaddresses() const;
-
         qint16 serverPort() const;
         int numberOfConnectedPlayers() const;
 
     public slots:
-        void connectToServer( const QString ip, const int port );
+        void connectToServer( const QString &ip, int port );
         void goOnlineSlot( const QString nickName, const bool onlineStatus );
-//         void playerConnected();
 
     signals:
-        void updateOnlineStatus( const bool onlineStatus );
-        void updateServerStatus( const bool serverStatus );
+        void onlineStatusUpdate( bool onlineStatus );
+        void serverStatusUpdate( bool serverStatus );
 
     private:
         RISIapplication( QObject *parent = 0 );
         void setupConnections();
-        bool isConnectedTo(const QString ip, const int port );
+        bool isConnectedTo(const QString &ip, int port );
 
         RISIui *risiUI;
         Server *server;
         HttpController *http;
         QList<PlayController *> playControllers;
-
         QString serverErrors;
-
         QIODevice *xmlFile;
+        QString name;
+        AppState appstate;
+
         static RISIapplication* inst;
 };
 

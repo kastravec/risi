@@ -28,6 +28,7 @@
 #include <QHBoxLayout>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QDebug>
 
 /**
  * \brief Constructor
@@ -37,6 +38,7 @@ ChatUI::ChatUI(QWidget *parent)
     :QWidget(parent)
 {
     initUI();
+    inputLineEdit->installEventFilter( this );
 }
 
 /**
@@ -81,29 +83,36 @@ bool ChatUI::eventFilter ( QObject * watched, QEvent * event )
             inputLineEditEvents( event );
     }
 
+    return false;
 }
 
 /**
  * \brief This function processes all the events for inputLineEdit -the line edit used to enter chat messages
  * @param event QEvent
  */
-void ChatUI::inputLineEditEvents( QEvent *event )
+bool ChatUI::inputLineEditEvents( QEvent *event )
 {
     switch ( event->type() )
     {
         case QEvent::KeyPress:
         {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *> ( event );
-            if( keyEvent->key() == QKeyEvent::Enter )
+            if( keyEvent->key() == Qt::Key_Return )
+            {
                 emit sendChatMessageRequest( inputLineEdit->text() );
+                inputLineEdit->clear();
+            }
 
-            return;
+            return true;
         }
         default:
-        {
-            return;
-        }
+            return true;
     }
 
+    return false;
 }
 
+void ChatUI::displayChatMessage( const QString &msg, const QString &nickName )
+{
+    chatWindow->append( nickName + ":" + msg );
+}

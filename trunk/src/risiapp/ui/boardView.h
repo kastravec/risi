@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci                                   *
- *   psaraci@gmail.com                                                     *
+ *   Copyright (C) 2007 by Petref Saraci   *
+ *   psaraci@gmail.com   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,44 +18,21 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef TCPCLIENT_H
-#define TCPCLIENT_H
+#ifndef BOARDVIEW_H
+#define BOARDVIEW_H
 
-#include <QAbstractSocket>
-#include "networkProtocol.h"
+#include <QGraphicsView>
 
-class QTcpSocket;
-
-class TcpClient: public QObject
+class BoardView : public QGraphicsView
 {
-    Q_OBJECT
-
     public:
-        TcpClient( QObject *parent = 0 );
+        BoardView( QGraphicsScene *b, QWidget *parent = 0 );
 
-        void connectToServer( const QString &ip, qint16 port );
-        void sendMessage( const QByteArray msg, qint8 type, qint8 gameID );
-        QString serverIP() const;
-        qint16 serverPort() const;
-        QString lastError() const;
-        QString lastNetworkProtocolError() const;
+    protected:
+        void drawBackground ( QPainter * painter, const QRectF & rect );
+        void drawForeground ( QPainter * painter, const QRectF & rect );
 
-    signals:
-        void messageArrived( const QByteArray msg, const qint8 msgType, const qint8 gameID );
-        void connectedToServer();
-        void disconnectedFromServer();
-
-    private slots:
-        void dataArrived();
-        void networkProtocolErrorSlot();
-        void socketErrors( QAbstractSocket::SocketError errors);
-        void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
-
-    private:
-        void setupConnections();
-        NetworkProtocol networkProtocol;
-        QTcpSocket *client;
-        QString clientError;
+/*        void drawItems ( QPainter * painter, int numItems, QGraphicsItem *[] items, const QStyleOptionGraphicsItem[] options );*/
 };
 
 #endif

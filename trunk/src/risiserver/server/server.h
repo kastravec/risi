@@ -29,7 +29,7 @@ class Game;
 class Server : public QTcpServer
 {
         Q_OBJECT
-
+//         Q_PROPERTY( bool running READ isRunning)
     public:
         static Server * instance();
 
@@ -39,7 +39,7 @@ class Server : public QTcpServer
         QString lastError() const;
 
 
-        void setMessageToPlayers( const QByteArray msg, const qint8 msgType ) const;
+        void sendMessageToPlayers( const QByteArray msg ) const;
 
     private slots:
         void newConnectionSlot();
@@ -52,7 +52,7 @@ class Server : public QTcpServer
         QMap <QTcpSocket *, Player *> connectedPlayers;
 
         static Server *inst;
-        bool onlineStatus;
+        bool upDown;
 };
 
 #endif

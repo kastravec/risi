@@ -18,17 +18,20 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef PROTOCOL_H
-#define PROTOCOL_H
+#ifndef SERVERPROTOCOL_H
+#define SERVERPROTOCOL_H
 
-#include <QByteArray>
+#include "connectionHandler.h"
 class Game;
 class Server;
 
-class ServerProtocol
+class ServerProtocol : public QObject
 {
+    Q_OBJECT
+
     public:
-        static ServerProtocol*instance();
+        ServerProtocol( QTcpSocket * client = 0, QObject *parent = 0 );
+        ~ServerProtocol();
 
         enum MessageType {
                             GameMsg = 'g',
@@ -40,14 +43,17 @@ class ServerProtocol
                             LeaveGame = 'a'
                          };
 
-        void parseMessageForServer( const QByteArray msg, const qint8 msgType );
-        void parseMessageForGame( const QByteArray msg, const qint8 msgType, Game *game );
+        void sendChatMessage( const QString &msg, const QString &nickName );
+
+    private slots:
+        void parseMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID );
 
     private:
-        ServerProtocol();
+        void parseMessageForServer( const QByteArray msg, const qint8 msgType );
+        void parseMessageForGame( const QByteArray msg, const qint8 msgType, const qint8 gameID );
+        void setupConnections();
 
-        Server *server;
-        static ServerProtocol *inst;
+        ConnectionHandler connectionHandler;
 };
 
 #endif

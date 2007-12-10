@@ -30,15 +30,16 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 
+#include "connectionProgressDlg.h"
+#include "playcontroller.h"
+#include "boardView.h"
 #include "chatUI.h"
 #include "gameListUI.h"
 #include "editGamesUI.h"
-
-#include "risiApplication.h"
 #include "settingsUI.h"
 #include "risiUI.h"
 #include "hostGameDialog.h"
-
+#include "risiApplication.h"
 
 class ConnectToIPDialog: public QDialog
 {
@@ -94,7 +95,7 @@ class ConnectToIPDialog: public QDialog
  * @param parent QWidget
  */
 RISIui::RISIui(QWidget *parent)
-    :QMainWindow(parent), nickNameCombobox( new QComboBox ), onlineStatus( false), appStatus( new QLabel( tr("Server not ready! "), this ) ), model( new QStandardItemModel ), currentPlayController( 0 )
+    :QMainWindow(parent), nickNameCombobox( new QComboBox ), onlineStatus( false), appStatus( new QLabel( tr("Server not ready! "), this ) ), model( new QStandardItemModel ), currentPlayer( 0 )
 {
     resize( 800,600);
     setAnimated(true);
@@ -107,6 +108,7 @@ RISIui::RISIui(QWidget *parent)
     createToolBars();
     createStatusBar();
     readSettings();
+    setupConnections();
 }
 
 /**
@@ -170,12 +172,13 @@ void RISIui::createDockWidget( DockWidgetType type )
  */
 void RISIui::createCentralWidget()
 {
+    boardView = new BoardView(0, this);
+
     QWidget *centralWidget = new QWidget;
     QHBoxLayout *hlayout = new QHBoxLayout;
 
     gameWidgetContainer = new QTabWidget(centralWidget);
     gameWidgetContainer->setTabShape(QTabWidget::Triangular);
-    gameWidgetContainer->addTab(new QWidget(centralWidget),tr("A Game"));
     hlayout->addWidget(gameWidgetContainer);
     centralWidget->setLayout(hlayout);
 
@@ -283,9 +286,9 @@ void RISIui::createMenus()
 /**
  * \brief Creates the SIGNAL-SLOT connections
  */
-void setupConnections()
+void RISIui::setupConnections()
 {
-    connect();
+//     connect( chatUI, SIGNAL(sendChatMessageRequest(const QString&)), currentPlayer,  SLOT(sendChatMessageSlot(const QString &) ) );
 }
 
  /**
@@ -491,6 +494,23 @@ PlayController * RISIui::currentPlayController() const
  */
 void RISIui::setCurrentPlayController( PlayController * playController )
 {
+    if( currentPlayer || !playController )
+        disconnect( currentPlayer, 0, 0, 0 );
+
     currentPlayer = playController;
+    if( currentPlayer )
+        connect( chatUI, SIGNAL(sendChatMessageRequest(const QString&)), currentPlayer, SLOT(sendChatMessage(const QString &) ) );
 }
 
+void RISIui::displayChatMessage( const QString &msg)
+{
+    chatUI->displayChatMessage( msg , QString() );
+}
+
+/**
+ * \brief
+ */
+void RISIui::initConnectionProgressDlg()
+{
+    ConnectionProgressDlg pgrogressDialog( this, currentPlayer );
+}
