@@ -18,10 +18,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "serverprotocol.h"
 #include "player.h"
 #include "server.h"
 #include "game.h"
+#include <QTcpSocket>
 
 
 /**
@@ -31,9 +31,16 @@
  * @param parent Parent
  */
 Player::Player( QTcpSocket *client, QObject *parent )
-    :QObject( parent ), connectionHandler( client, this ), games(), nick( "player"+QString::number( client->socketDescriptor()*2 ) ), protocol( ServerProtocol::instance() )
+    :QObject( parent ), games(), nick( "player"+QString::number( client->socketDescriptor()*2 ) ), protocol( client, this )
 {
     setupConnections();
+}
+
+/**
+ *
+ */
+Player::~Player()
+{
 }
 
 /**
@@ -42,9 +49,6 @@ Player::Player( QTcpSocket *client, QObject *parent )
  */
 void Player::setupConnections() const
 {
-    connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )), this, SLOT(messageArrivedSlot(const QByteArray, const qint8, const qint8 )) );
-
-    connect( &connectionHandler, SIGNAL(disconnectMe()), this, SLOT(disconnected()) );
 }
 
 /**
@@ -71,42 +75,19 @@ Game * Player::gameForID( qint8 iD )
 /**
  * \brief this slot is called when the player is disconnected from the server, check lastError()
  */
-void Player::disconnected()
+void Player::disconnected() //FIXME
 {
-    qDebug()<<"disconnected slot" <<connectionHandler.lastError();
-
-    Server::instance()->playerDisconnected( this, connectionHandler.lastError() );
-}
-
-/**
- *  \brief this slot is called when a message arrives from the player
- * @param msg The arrived message
- * @param msgType the type of the arrived message
- * @param gameID gameID is the id of which game this player is connected
- */
-
-/**
- * \brief this slot is called everytime a message arrives for the player
- * @param msg QByteArray the arrived message
- * @param msgType qint8 type of the message
- * @param gameID qint8
- */
-void Player::messageArrivedSlot( const QByteArray msg, const qint8 msgType, const qint8 gameID )
-{
-    Game * game = gameForID( gameID );
-    if( game )
-        protocol->parseMessageForGame( msg, msgType, game );
-    else
-        protocol->parseMessageForServer( msg, msgType );
+//     Server::instance()->playerDisconnected( this, connectionHandler.lastError() );
 }
 
 /**
  * \brief returns the socket of the connection
  * @return QTcpSocket socket of the connection
  */
-const QTcpSocket * Player::connectionSocket()
+QTcpSocket * Player::connectionSocket() const
 {
-    return connectionHandler.socket();
+    return 0;
+//     return connectionHandler.socket();
 }
 
 /**
@@ -137,7 +118,12 @@ void Player::setNickname( const QString & name )
     nick = name;
 }
 
-void Player::sendMessage( const QByteArray msg, const qint8 msgType )
+/**
+ * \brief
+ * @param msg QByteArray
+ * @param msgType qint8
+ */
+void Player::sendChatMessage( const QByteArray msg )
 {
-    connectionHandler.sendMessage( msg, msgType, -1 );
+    protocol.sendChatMessage( msg, nick );
 }

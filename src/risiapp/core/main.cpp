@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include <QApplication>
+#include <QDebug>
 #include "risiApplication.h"
 #include "initDialog.h"
 
@@ -36,7 +37,14 @@ int main(int argc, char *argv[])
     if( returnCode == QDialog::Accepted )
     {
         RISIapplication::instance()->initUI();
-        RISIapplication::instance()->initServer();
+
+        if( !RISIapplication::instance()->initServer() )
+        {
+            qDebug()<<"Server could not be started!!";
+            return 42;
+        }
+
+        RISIapplication::instance()->setNickname( initDialog.nickName() );
         returnCode = app.exec();
         RISIapplication::instance()->deleteLater();
     }

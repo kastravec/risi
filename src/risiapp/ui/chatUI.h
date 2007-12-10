@@ -35,6 +35,8 @@ class ChatUI: public QWidget
     public:
         ChatUI(QWidget *parent = 0);
 
+        void displayChatMessage( const QString &msg, const QString &nickName );
+
     signals:
         void sendChatMessageRequest( const QString & msg );
 
@@ -44,7 +46,7 @@ class ChatUI: public QWidget
         QListView *playerListWindow;
 
         bool eventFilter ( QObject * watched, QEvent * event );
-        void inputLineEditEvents( QEvent *event );
+        bool inputLineEditEvents( QEvent *event );
         void initUI();
 };
 

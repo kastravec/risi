@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci   *
- *   psaraci@gmail.com   *
+ *   Copyright (C) 2007 by Petref Saraci                                   *
+ *   psaraci@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,26 +18,42 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "connectionProgressDlg.h"
+#include "playcontroller.h"
+#include <QApplication>
 
-#include "boardView.h"
-
-BoardView::BoardView( QGraphicsScene *b, QWidget *parent )
-    :QGraphicsView( b, parent )
+/**
+ * \class ConnectionProgressDlg
+ * \internal This class is used to handle the progress when a player attemts to connect to a server
+ * \brief Constructor
+ * @param parent
+ * @param currentPlay
+ */
+ConnectionProgressDlg::ConnectionProgressDlg( QObject *parent, PlayController *currentPlay )
+:QObject( parent ), countSecs( 0 ), maxTime( 10 ), timer( this ), dlg( 0 ), currentPl( currentPlay )
 {
-    board = qobject_cast<Board *>(b);
+    timer.setInterval( 500 );
+    timer.setSingleShot( true );
+    timer.start();
+    dlg.setMinimumDuration( 0 );
+    dlg.setRange( 0, maxTime );
+    dlg.setCancelButtonText(tr("&Cancel"));
+    dlg.setValue( countSecs );
+    QApplication::processEvents();//FIXME it should not be neccessary to call this ??
+    connect( &timer, SIGNAL(timeout() ), this, SLOT(updateStatus() ) );
 }
 
-void BoardView::drawBackground ( QPainter * painter, const QRectF & rect )
+/**
+ * \brief called every 500 msec to check if the attempt to connect has succeeded
+ */
+void ConnectionProgressDlg::updateStatus()
 {
-    QGraphicsView::drawBackground( painter, rect );
-}
+    dlg.setValue( ++countSecs );
+    if( currentPl->isConnected() || countSecs ==  2 * maxTime)
+    {
+        timer.stop();
+        return;
+    }
 
-void BoardView::BoardView::drawForeground ( QPainter * painter, const QRectF & rect )
-{
-    QGraphicsView::drawForeground( painter, rect );
+     timer.start();
 }
-/*
-void BoardView::drawItems ( QPainter * painter, int numItems, QGraphicsItem *[] items, const QStyleOptionGraphicsItem[] options )
-{
-    QGraphicsView::drawItems( painter, numItems, items, options );
-}*/

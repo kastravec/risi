@@ -18,44 +18,41 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef TCPCLIENT_H
-#define TCPCLIENT_H
+#ifndef CLIENTPROTOCOL_H
+#define CLIENTPROTOCOL_H
 
-#include <QAbstractSocket>
-#include "networkProtocol.h"
 
-class QTcpSocket;
+#include "tcpClient.h"
+class PlayController;
 
-class TcpClient: public QObject
+class ClientProtocol: public QObject
 {
     Q_OBJECT
 
     public:
-        TcpClient( QObject *parent = 0 );
+        ClientProtocol( PlayController *pl );
+        ~ClientProtocol();
 
-        void connectToServer( const QString &ip, qint16 port );
-        void sendMessage( const QByteArray msg, qint8 type, qint8 gameID );
-        QString serverIP() const;
-        qint16 serverPort() const;
+        enum MessageType {
+                            ChatMsg = 'c',
+                            NickName = 'n'
+                         };
+
+        void sendNickName( const QString &name );
+        void sendChatMessage( const QString &msg, const QString &nick );
+        void connectToServer( const QString &ip, int port );
         QString lastError() const;
-        QString lastNetworkProtocolError() const;
-
-    signals:
-        void messageArrived( const QByteArray msg, const qint8 msgType, const qint8 gameID );
-        void connectedToServer();
-        void disconnectedFromServer();
 
     private slots:
-        void dataArrived();
-        void networkProtocolErrorSlot();
-        void socketErrors( QAbstractSocket::SocketError errors);
-        void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
+        void parseMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID );
 
     private:
         void setupConnections();
-        NetworkProtocol networkProtocol;
-        QTcpSocket *client;
-        QString clientError;
+        void parseServerMessage( const QByteArray msg, const qint8 msgType );
+        void parseGameMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID );
+
+        PlayController *player;
+        TcpClient tcpClient;
 };
 
 #endif

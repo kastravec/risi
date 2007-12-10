@@ -31,7 +31,7 @@ Server *Server::inst = 0;
  * @param parent
  */
 Server::Server( QObject *parent )
-    :QTcpServer(parent), hostedGames(), games(), connectedPlayers(), onlineStatus( false )
+    :QTcpServer(parent), hostedGames(), games(), connectedPlayers(), upDown( false )
 {
     connect( this, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()) );
 }
@@ -159,13 +159,18 @@ QString Server::lastError() const
     }
 }
 
-void Server::setMessageToPlayers( const QByteArray msg, const qint8 msgType ) const
+/**
+ *
+ * @param msg
+ * @param msgType
+ */
+void Server::sendMessageToPlayers( const QByteArray msg ) const
 {
-    QMap<QTcpSocket *, Player *>::const_iterator i = connectedPlayers.constBegin();
-    while (i != connectedPlayers.constEnd())
+    QMapIterator<QTcpSocket *, Player *> i(connectedPlayers);
+    while (i.hasNext())
     {
-        i.value()->sendMessage( msg , msgType );
-        ++i;
+        i.next();
+        i.value()->sendChatMessage( msg );
     }
 }
 

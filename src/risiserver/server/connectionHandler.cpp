@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include "connectionHandler.h"
+#include "networkProtocol.h"
+#include <QTcpSocket>
 
 /**
  * \class ConnectionHandler
@@ -28,8 +30,8 @@
  * @param socket
  * @param parent
  */
-ConnectionHandler::ConnectionHandler( QTcpSocket *socket , QObject *parent )
-    :QObject( parent ), client(socket), clientError()
+ConnectionHandler::ConnectionHandler( QObject *parent, QTcpSocket *sock )
+    :QObject( parent ), networkProtocol( this ), client( sock ), clientError()
 {
     setupConnections();
 }
@@ -48,9 +50,9 @@ void ConnectionHandler::setupConnections()
 {
     connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
 
-    connect( NetworkProtocol::instance(), SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )));
+    connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )));
 
-    connect( NetworkProtocol::instance(), SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError) ), this, SLOT(networkProtocolErrorSlot(NetworkProtocol::ProtocolError)) );
+    connect( &networkProtocol, SIGNAL(networkProtocolError() ), this, SLOT(networkProtocolErrorSlot()) );
 
 //TODO QAbstractSocket::SocketError is not a registered metatype, so for queued connections, you will have to register it with Q_REGISTER_METATYPE
     connect( client, SIGNAL(error( QAbstractSocket::SocketError )), this,SLOT(socketErrors( QAbstractSocket::SocketError )) ) ;
@@ -68,8 +70,8 @@ void ConnectionHandler::setupConnections()
  */
 void ConnectionHandler::sendMessage( const QByteArray msg, const qint8 type, const qint8 gameID )
 {
-    QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type, gameID );
-    qint32 size = NetworkProtocol::instance()->sizeOfPacket( packet );
+    QByteArray packet = networkProtocol.createPacket( msg, type, gameID );
+    qint32 size = networkProtocol.sizeOfPacket( packet );
 
     //sending the packet size first
     client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
@@ -82,47 +84,15 @@ void ConnectionHandler::sendMessage( const QByteArray msg, const qint8 type, con
  */
 void ConnectionHandler::dataArrived()
 {
-    NetworkProtocol::instance()->readData( client );
+    networkProtocol.readData( client );
 }
 
 /**
  * \brief this slot is called everytime there is a network protocol error
- * @param err NetworkProtocol::ProtocolError
+ * @param err ServerNetworkProtocol::ProtocolError
  */
-void ConnectionHandler::networkProtocolErrorSlot( NetworkProtocol::ProtocolError err )
+void ConnectionHandler::networkProtocolErrorSlot()
 {
-    switch( err )
-    {
-        case NetworkProtocol::InvalidFormat:
-        {
-            qDebug()<<"invalid protocol format";
-            sendMessage("", 'a', -1 );
-            client->flush();//causes the socket to send the data "immediately"
-            client->close();
-            clientError = tr("invalid protocol format");//storing the error
-            emit disconnectMe();
-            break;
-        }
-        case NetworkProtocol::InvalidVersion:
-        {
-            qDebug()<<"invalid protocol version";
-            sendMessage("", 'b', -1 );
-            client->flush();
-            client->close();
-            clientError = tr("invalid protocol version");
-            emit disconnectMe();
-            break;
-        }
-        default:
-        {
-            qDebug()<<"unkown protocol error";
-            sendMessage("", 'c', -1 );
-            client->flush();
-            client->close();
-            clientError = tr("unkown protocol error");
-            emit disconnectMe();
-        }
-    }
 }
 
 /**

@@ -20,6 +20,7 @@
 
 #include "tcpClient.h"
 #include "risiApplication.h"
+#include "clientnetworkprotocol.h"
 
 #include <QHostAddress>
 #include <QTcpSocket>
@@ -28,13 +29,10 @@
  * \brief Constructor
  * @param parent QObject
  */
-TcpClient::TcpClient( QObject * parent, const QString &ip, int port )
-    :QObject( parent ), client(new QTcpSocket(this) ), clientError()
+TcpClient::TcpClient( QObject * parent )
+    :QObject( parent ), networkProtocol( this ), client(new QTcpSocket(this) ), clientError()
 {
     setupConnections();
-
-    QHostAddress hostAddres( ip );
-    client->connectToHost( hostAddres, port );
 }
 
 /**
@@ -65,24 +63,34 @@ QString TcpClient::lastError() const
 }
 
 /**
+ * \brief Returns the last error message from the network protocol
+ * @return QString &
+ */
+QString TcpClient::lastNetworkProtocolError() const
+{
+    return QString();
+}
+
+/**
  * \brief Creates SIGNAL-SLOTS connections
  * \internal
  */
 void TcpClient::setupConnections()
 {
     connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
-
-    connect( NetworkProtocol::instance(), SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )) );
-
-    connect( NetworkProtocol::instance(), SIGNAL(networkProtocolError(NetworkProtocol::ProtocolError)), this, SLOT(protocolError(NetworkProtocol::ProtocolError) ) );
-
-    connect( client, SIGNAL(disconnected()), this, SLOT(disconnected()) );
-
+    connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )) );
+    connect( &networkProtocol, SIGNAL(networkProtocolError()), this, SLOT(networkProtocolErrorSlot() ) );
     //TODO QAbstractSocket::SocketError is not a registered metatype, so for queued connections, you will have to register it with Q_REGISTER_METATYPE
     connect( client, SIGNAL(error( QAbstractSocket::SocketError )), this,SLOT(socketErrors( QAbstractSocket::SocketError )) ) ;
-
     connect( client, SIGNAL(stateChanged( QAbstractSocket::SocketState ) ), this, SLOT( socketStateChanged(QAbstractSocket::SocketState) ) );
+    connect( client, SIGNAL(connected()), this, SIGNAL(connectedToServer()) );
+    connect( client, SIGNAL(disconnected()), this, SIGNAL(disconnectedFromServer()) );
+}
 
+void TcpClient::connectToServer( const QString &ip, qint16 port )
+{
+    QHostAddress address( ip );
+    client->connectToHost( address, port );
 }
 
 /**
@@ -93,45 +101,19 @@ void TcpClient::setupConnections()
  */
 void TcpClient::sendMessage( const QByteArray msg, qint8 type, qint8 gameID )
 {
-    QByteArray packet = NetworkProtocol::instance()->createPacket( msg, type, gameID );
-    qint32 size = NetworkProtocol::instance()->sizeOfPacket( packet );
+    QByteArray packet = networkProtocol.createPacket( msg, type, gameID );
+    qint32 size = networkProtocol.sizeOfPacket( packet );
 
     client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
     client->write(packet);
 }
 
-void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
+/**
+ * \brief called every time there is a network protocol error
+ * \internal private slot
+ */
+void TcpClient::networkProtocolErrorSlot()
 {
-    switch ( err )
-    {
-        case NetworkProtocol::InvalidFormat:
-        {
-            qDebug()<<"client:"<<"invalid protocol format";
-            sendMessage("", 'a', -1 );
-            client->flush();
-            client->close();
-            clientError = QString(" Invalid network protocol format ! ");
-            /*RISIapplication::instance()->playerDisconnected( this );*///FIXME
-            break;
-        }
-        case NetworkProtocol::InvalidVersion:
-        {
-            qDebug()<<"invalid protocol version";
-            sendMessage("", 'b', -1 );
-            client->close();
-            clientError = QString("Invalid network protocol version ! ");
-            /*RISIapplication::instance()->playerDisconnected( this );*/ //FIXME
-            break;
-        }
-        default:
-        {
-            qDebug()<<"unkown protocol error";
-            sendMessage("", 'c', -1 );
-            client->close();
-            clientError = QString("Unknown network protocol ! ");
-            /*RISIapplication::instance()->playerDisconnected( this );*/ //FIXME
-        }
-    }
 }
 
 /**
@@ -140,13 +122,8 @@ void TcpClient::protocolError( NetworkProtocol::ProtocolError err )
  */
 void TcpClient::dataArrived()
 {
-    NetworkProtocol::instance()->readData( client );
-}
-
-void TcpClient::disconnected()
-{
-    qDebug()<<"disconnected";
-    //FIXME remove this instance once the connection is dead
+    qDebug()<<"message from server recieved:";
+    networkProtocol.readData( client );
 }
 
 void TcpClient::socketErrors( QAbstractSocket::SocketError errors)

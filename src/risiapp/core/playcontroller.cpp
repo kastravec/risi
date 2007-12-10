@@ -19,7 +19,8 @@
  ***************************************************************************/
 
 #include "playcontroller.h"
-
+#include "risiUI.h"
+#include "risiApplication.h"
 
 /**
  * \class PlayController
@@ -28,8 +29,30 @@
  * @param ip const QString &
  * @param port int
  */
-PlayController::PlayController( QObject *parent, const QString &ip, int port )
-    :QObject( parent ), tcpClient( this, ip, port )
+PlayController::PlayController( QObject *parent, RISIui *ui, const QString &ip, int pt )
+    :QObject( parent ), board( this ), risiUI( ui ), protocol( this ), gameID( -1 ), connectedToServer( false ), ipAddress( ip ), port( pt )
+{
+    setupConnections();
+    protocol.connectToServer( ip, port );
+}
+
+/**
+ * \brief
+ */
+PlayController::~PlayController()
+{
+}
+
+bool PlayController::isConnected() const
+{
+    return connectedToServer;
+}
+
+/**
+ * \brief
+ * \internal
+ */
+void PlayController::setupConnections()
 {
 }
 
@@ -37,18 +60,66 @@ PlayController::PlayController( QObject *parent, const QString &ip, int port )
  * \brief returns the last error occured on PlayController
  * @return QString
  */
-const QString &PlayController::lastError()
+QString PlayController::lastTcpError() const
 {
-    return tcpClient.lastError();
+    return protocol.lastError();
 }
 
-const QString &PlayController::serverIP()
+/**
+ * \brief
+ * @return QString
+ */
+QString PlayController::serverIP() const
 {
-    return tcpClient.serverIP();
+    return ipAddress;
 }
 
-const qint16 &PlayController::serverPort()
+/**
+ * \brief
+ * @return qint16
+ */
+qint16 PlayController::serverPort() const
 {
-    return tcpClient.serverPort();
+    return port;
 }
 
+/**
+ * \brief
+ * \internal
+ */
+void PlayController::tcpClientConnected()
+{
+    connectedToServer = true;
+}
+
+/**
+ * \brief
+ * \internal
+ */
+void PlayController::tcpClientDisconnected()
+{
+    connectedToServer = false;
+}
+
+/**
+ * \brief
+ * @param msg QString
+ */
+void PlayController::sendChatMessage( const QString & msg )
+{
+    protocol.sendChatMessage( msg, RISIapplication::instance()->nickname() );
+}
+
+void PlayController::sendNickName()
+{
+    protocol.sendNickName( RISIapplication::instance()->nickname() );
+}
+
+/**
+ * \brief
+ * @param msg QString
+ */
+void PlayController::displayChatMessage( const QString &msg )
+{
+    risiUI->displayChatMessage( msg );
+}

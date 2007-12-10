@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2007 by Petref Saraci   *
- *   psaraci@gmail.com   *
+ *   Copyright (C) 2007 by Petref Saraci                                   *
+ *   psaraci@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,26 +18,30 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef CONNECTIONPROGRESSDLG_H
+#define CONNECTIONPROGRESSDLG_H
 
-#ifndef BOARDVIEW_H
-#define BOARDVIEW_H
+#include <QProgressDialog>
+#include <QTimer>
 
-#include <QGraphicsView>
-#include "board.h"
+class PlayController;
 
-class BoardView : public QGraphicsView
+class ConnectionProgressDlg: public QObject
 {
+    Q_OBJECT
+
     public:
-        BoardView( QGraphicsScene *b, QWidget *parent = 0 );
+        ConnectionProgressDlg( QObject *parent = 0, PlayController *currentPlay = 0 );
 
-    protected:
-        void drawBackground ( QPainter * painter, const QRectF & rect );
-        void drawForeground ( QPainter * painter, const QRectF & rect );
-
-/*        void drawItems ( QPainter * painter, int numItems, QGraphicsItem *[] items, const QStyleOptionGraphicsItem[] options );*/
+    private slots:
+        void updateStatus();
 
     private:
-        Board *board;
+        int countSecs;
+        int maxTime; //FIXME use QSetting for this
+        QTimer timer;
+        QProgressDialog dlg;
+        PlayController *currentPl;
 };
 
 #endif
