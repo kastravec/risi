@@ -29,12 +29,9 @@ INCLUDEPATH += . \
 # Input
 HEADERS += src/protocols/networkProtocol.h \
            src/protocols/serverprotocol.h \
-           src/risiapp/core/board.h \
-           src/risiapp/core/boardItem.h \
-           src/risiapp/core/gameListXML.h \
-           src/risiapp/core/risiApplication.h \
-           src/risiapp/core/tcpClient.h \
-           src/risiapp/core/playcontroller.h \
+		   src/protocols/connectionHandler.h \
+		   src/protocols/clientprotocol.h \
+		   src/protocols/protocol.h \
 		   src/risiapp/http/httpController.h \
            src/risiapp/ui/chatUI.h \
            src/risiapp/ui/editGamesUI.h \
@@ -46,23 +43,21 @@ HEADERS += src/protocols/networkProtocol.h \
            src/risiapp/ui/boardView.h \
            src/risiapp/ui/settingsUI.h \
 		   src/risiapp/ui/connectionProgressDlg.h \
+           src/risiapp/core/board.h \
+           src/risiapp/core/boardItem.h \
+           src/risiapp/core/gameListXML.h \
+           src/risiapp/core/risiApplication.h \
+           src/risiapp/core/tcpClient.h \
+           src/risiapp/core/playcontroller.h \
            src/risiserver/core/game.h \
            src/risiserver/core/player.h \
-           src/risiserver/server/connectionHandler.h \
-           src/risiserver/server/server.h \
-		   src/protocols/clientprotocol.h \
-           src/protocols/servernetworkprotocol.h \
-		   src/protocols/clientnetworkprotocol.h 
+           src/risiserver/server/server.h 
 
 SOURCES += src/protocols/networkProtocol.cpp \
            src/protocols/serverprotocol.cpp \
-           src/risiapp/core/board.cpp \
-           src/risiapp/core/boardItem.cpp \
-           src/risiapp/core/gameListXML.cpp \
-           src/risiapp/core/main.cpp \
-           src/risiapp/core/risiApplication.cpp \
-           src/risiapp/core/tcpClient.cpp \
-           src/risiapp/core/playcontroller.cpp \
+		   src/protocols/clientprotocol.cpp \
+		   src/protocols/connectionHandler.cpp \
+		   src/protocols/protocol.cpp \
            src/risiapp/http/httpController.cpp \
            src/risiapp/ui/chatUI.cpp \
            src/risiapp/ui/editGamesUI.cpp \
@@ -74,11 +69,14 @@ SOURCES += src/protocols/networkProtocol.cpp \
            src/risiapp/ui/boardView.cpp \
            src/risiapp/ui/settingsUI.cpp \
            src/risiapp/ui/connectionPrrogressDlg.cpp \
+           src/risiapp/core/board.cpp \
+           src/risiapp/core/boardItem.cpp \
+           src/risiapp/core/gameListXML.cpp \
+           src/risiapp/core/main.cpp \
+           src/risiapp/core/risiApplication.cpp \
+           src/risiapp/core/tcpClient.cpp \
+           src/risiapp/core/playcontroller.cpp \         
            src/risiserver/core/game.cpp \
            src/risiserver/core/player.cpp \
-           src/risiserver/server/connectionHandler.cpp \
-           src/risiserver/server/server.cpp \
-		   src/protocols/clientprotocol.cpp \
-           src/protocols/servernetworkprotocol.cpp \
-		   src/protocols/clientnetworkprotocol.cpp 
-
+           src/risiserver/server/server.cpp 
+ 

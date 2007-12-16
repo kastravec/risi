@@ -27,8 +27,9 @@
  * \internal private
  */
 ClientProtocol::ClientProtocol( PlayController *pl )
-    :player( pl ), tcpClient( player )
+    :Protocol( pl, 0 ), player( pl ), tcpClient( this )
 {
+    setTcpSocket( tcpClient.socket() );
     setupConnections();
 }
 
@@ -43,7 +44,6 @@ void ClientProtocol::setupConnections()
 {
     connect( &tcpClient, SIGNAL(connectedToServer()), player, SLOT(tcpClientConnected()) );
     connect( &tcpClient, SIGNAL(disconnectedFromServer()), player, SLOT(tcpClientDisconnected()) );
-    connect( &tcpClient, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8)), this, SLOT(parseMessage(const QByteArray, const qint8, const qint8)) );
 }
 
 void ClientProtocol::connectToServer( const QString &ip, int port )
@@ -58,84 +58,34 @@ void ClientProtocol::connectToServer( const QString &ip, int port )
  */
 void ClientProtocol::sendNickName( const QString &name )
 {
-    tcpClient.sendMessage( name.toUtf8(), 'n', '-1' );
-}
-
-void ClientProtocol::sendChatMessage( const QString &msg, const QString &nick )
-{
-    QString message = msg;
-    message.prepend(nick);
-    int nickSize = nick.size();
-    message.prepend( QString::number( nickSize ) );
-    if( QString::number( nickSize ).size() != 2 )
-        message.prepend( "/" );
-
-    tcpClient.sendMessage( message.toUtf8(), 'c', -1 );
+    tcpClient.sendMessage( name.toUtf8(), NickName, NOGAME );
 }
 
 /**
  * \brief
- * \internal
- * @param msg QByteArray
- * @param msgType qint8
+ * @param msg QByteArray &
  */
-void ClientProtocol::parseServerMessage( const QByteArray msg, const qint8 msgType )
+void ClientProtocol::chatMessageArrived( const QByteArray &msg ) const
 {
-    switch( msgType )
+    QString message( msg );
+
+/*    QString nickSize = message.left(2);
+
+    if( nickSize.contains( ESCAPECHATCHARACTER ) )
     {
-        case 'c'://chat message
-        {
-            player->displayChatMessage( msg );
-            return;
-        }
-        case 'n': //HostRequest
-        {
-            break;
-        }
-        case 'h': //HostRequest
-        {
-            break;
-        }
-        case 'l': //HostCancel
-        {
-            break;
-        }
-        case 'j': //JoinGame
-        {
-            break;
-        }
-        default:
-            break;
-    }
+        nickSize.remove( 0,1 );
+        message.remove( 0, 2 );
+        message =
+    }*/
+
+    player->displayChatMessage( message.remove( 0, 2) );
 }
 
 /**
  * \brief
- * @param msg QString
- * @param msgType qint8
- * @param gameID qint8
+ * @param msg const QByteArray &
  */
-void ClientProtocol::parseMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID )
-{
-    qDebug()<<"message from server recieved: " <<msg <<gameID;
-    if( gameID == -1 )
-        parseServerMessage( msg, msgType );
-    else
-        parseGameMessage( msg, msgType, gameID );
-}
-
-/**
- * \brief
- * \internal
- * @param msg QByteArray
- * @param msgType qint8
- * @param gameID qint8
- */
-void ClientProtocol::parseGameMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID )
+void ClientProtocol::nickNameMessageArrived( const QByteArray & msg ) const
 {
 }
 
-QString ClientProtocol::lastError() const
-{
-    return tcpClient.lastError();
-}

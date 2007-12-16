@@ -21,11 +21,9 @@
 #ifndef SERVERPROTOCOL_H
 #define SERVERPROTOCOL_H
 
-#include "connectionHandler.h"
-class Game;
-class Server;
+#include "protocol.h"
 
-class ServerProtocol : public QObject
+class ServerProtocol : public Protocol
 {
     Q_OBJECT
 
@@ -33,27 +31,9 @@ class ServerProtocol : public QObject
         ServerProtocol( QTcpSocket * client = 0, QObject *parent = 0 );
         ~ServerProtocol();
 
-        enum MessageType {
-                            GameMsg = 'g',
-                            Chat = 'c',
-                            NickName = 'n',
-                            HostRequest = 'h',
-                            HostCancel = 'l',
-                            JoinGame = 'j',
-                            LeaveGame = 'a'
-                         };
-
-        void sendChatMessage( const QString &msg, const QString &nickName );
-
-    private slots:
-        void parseMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID );
-
     private:
-        void parseMessageForServer( const QByteArray msg, const qint8 msgType );
-        void parseMessageForGame( const QByteArray msg, const qint8 msgType, const qint8 gameID );
-        void setupConnections();
-
-        ConnectionHandler connectionHandler;
+        void chatMessageArrived( const QByteArray &msg ) const;
+        void nickNameMessageArrived( const QByteArray & msg ) const;
 };
 
 #endif

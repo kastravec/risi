@@ -24,6 +24,7 @@
 #include "networkProtocol.h"
 #include <QAbstractSocket>
 class QTcpSocket;
+class Protocol;
 
 /**
  * list of message types:
@@ -38,28 +39,33 @@ class ConnectionHandler: public QObject
 
     public:
         ConnectionHandler( QObject *parent = 0, QTcpSocket *sock = 0 );
-        ~ConnectionHandler();
+        virtual ~ConnectionHandler();
 
-        const QTcpSocket *socket() const;
+        QTcpSocket *socket() const;
+        void setSocket( QTcpSocket *sock );
         QString lastError() const;
-
-        void sendMessage( const QByteArray msg, const qint8 type, const qint8 gameID );
+        qint64 sendMessage( const QByteArray msg, const qint8 type, const qint8 gameID );
 
     signals:
         void messageArrived( const QByteArray msg, const qint8 msgType, const qint8 gameID );
-        void disconnectMe();
+        void connectedToServer();
+        void disconnectedFromServer();
 
     private slots:
         void dataArrived();
+        void message( const QByteArray msg, const qint8 msgType, const qint8 gameID );
         void networkProtocolErrorSlot();
-        void socketErrors( QAbstractSocket::SocketError errors);//FIXME do i need this?
-        void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
+        void socketErrors( QAbstractSocket::SocketError errors);
+        void socketStateChanged( QAbstractSocket::SocketState state );
+
+    protected:
+        QString clientError;
+        QTcpSocket *client;
+        NetworkProtocol networkProtocol;
 
     private:
         void setupConnections();
-        NetworkProtocol networkProtocol;
-        QTcpSocket *client;
-        QString clientError;
-};
+        Protocol *protocol;
 
+};
 #endif

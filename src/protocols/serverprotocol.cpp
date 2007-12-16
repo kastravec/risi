@@ -17,10 +17,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-
-#include "server.h"
 #include "serverprotocol.h"
-#include "game.h"
+#include "player.h"
+#include "server.h"
 
 /**
  * \class ServerProtocol
@@ -28,10 +27,8 @@
  * \brief Constructor
  */
 ServerProtocol::ServerProtocol( QTcpSocket * client, QObject *parent  )
-    :QObject( parent ), connectionHandler( parent, client )
-{
-    setupConnections();
-}
+    :Protocol( parent, client )
+{}
 
 /**
  * \brief
@@ -42,97 +39,40 @@ ServerProtocol::~ServerProtocol()
 
 /**
  * \brief
- * @param msg QByteArray
- * @param msgType qint8
- * @param gameID qint8
+ * @param msg QString
  */
-void ServerProtocol::parseMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID )
+void ServerProtocol::chatMessageArrived( const QByteArray &msg ) const
 {
-    if( gameID == -1 )
-        parseMessageForServer( msg, msgType );
-    else
-        parseMessageForGame( msg, msgType, gameID );
-}
-
-/**
- *\brief  parses the message arrived, typically this message is targeted for the Game. Hence, the parsing is limitted only for the Game
- * @param msg const QByteArray
- * @param msgType const qint8
- */
-void ServerProtocol::parseMessageForGame( const QByteArray msg, const qint8 msgType, const qint8 gameID )//TODO protocol
-{
-    switch( msgType )
+    qDebug()<<"chatMessageArrived at server from : " <<connectionHandler.socket() <<"msg: " <<msg;
+    QMapIterator<QTcpSocket *, Player *> iterator( Server::instance()->players() );
+    while (iterator.hasNext())
     {
-        case 'g': //GameMsg
-        {
-            break;
-        }
-        case 'c': //chat
-        {
-            break;
-        }
-        case 'a': //Leave game
-        {
-            break;
-        }
-    }
-
-}
-
-/**
- * \brief parses the message arrived, typically this message is target for the Server. Hence, the parsing is limitted only for the Server
- * @param msg const QByteArray
- * @param msgType const qint8
- */
-void ServerProtocol::parseMessageForServer( const QByteArray msg, const qint8 msgType )
-{
-    switch( msgType )
-    {
-        case 'c'://chat message
-        {
-            qDebug()<<"message arrived in server: " <<msg <<msgType;
-            Server::instance()->sendMessageToPlayers( msg );
-            return;
-        }
-        case 'n': //HostRequest
-        {
-            break;
-        }
-        case 'h': //HostRequest
-        {
-            break;
-        }
-        case 'l': //HostCancel
-        {
-            break;
-        }
-        case 'j': //JoinGame
-        {
-            break;
-        }
-        default:
-            break;
+        iterator.next();
+        iterator.value()->sendChatMessage( msg );
     }
 }
 
-void ServerProtocol::setupConnections()
-{
-    connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )), this, SLOT(parseMessage(const QByteArray, const qint8, const qint8 )) );
-}
-
 /**
- *
- * @param msg
- * @param nickName
+ * \brief
+ * @param msg const QByteArray &
  */
-void ServerProtocol::sendChatMessage( const QString &msg, const QString &nick )
+void ServerProtocol::nickNameMessageArrived( const QByteArray & msg ) const
 {
-    QString message = msg;
-    message.prepend( nick );
-    int nickSize = nick.size();
-    message.prepend( QString::number( nickSize ) );
-    if( QString::number( nickSize ).size() != 2 )
-        message.prepend( "/" );
+    QString newNick( msg );
 
-    connectionHandler.sendMessage( message.toUtf8(), 'c', -1 );
+    QMapIterator<QTcpSocket *, Player *> iterator( Server::instance()->players() );
+    while (iterator.hasNext())
+    {
+        iterator.next();
+        if ( iterator.value()->nickname() == newNick )
+            break;
+    }
+
+    iterator.toFront();
+
+    while (iterator.hasNext())
+    {
+        iterator.next();
+        iterator.value()->sendUpdatedNick( msg );
+    }
 }

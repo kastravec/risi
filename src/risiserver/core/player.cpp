@@ -86,8 +86,7 @@ void Player::disconnected() //FIXME
  */
 QTcpSocket * Player::connectionSocket() const
 {
-    return 0;
-//     return connectionHandler.socket();
+    return protocol.tcpSocket();
 }
 
 /**
@@ -125,5 +124,13 @@ void Player::setNickname( const QString & name )
  */
 void Player::sendChatMessage( const QByteArray msg )
 {
-    protocol.sendChatMessage( msg, nick );
+    protocol.sendChatMessage( msg );
+}
+
+/**
+ * \brief
+ */
+void Player::sendUpdatedNick( const QByteArray &nick ) const
+{
+
 }

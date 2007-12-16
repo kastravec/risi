@@ -114,5 +114,5 @@ bool ChatUI::inputLineEditEvents( QEvent *event )
 
 void ChatUI::displayChatMessage( const QString &msg, const QString &nickName )
 {
-    chatWindow->append( nickName + ":" + msg );
+    chatWindow->append(msg);
 }

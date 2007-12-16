@@ -39,14 +39,13 @@ class PlayController : public QObject
 
         bool isConnected() const;
         void displayChatMessage( const QString &msg );
-        void sendNickName();
         QString lastTcpError() const;
         QString serverIP() const;
         qint16 serverPort() const;
 
     public slots:
         void sendChatMessage( const QString & msg );
-
+        void sendNickName();
         void tcpClientConnected();
         void tcpClientDisconnected();
 

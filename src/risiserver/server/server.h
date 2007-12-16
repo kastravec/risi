@@ -33,11 +33,11 @@ class Server : public QTcpServer
     public:
         static Server * instance();
 
+        QMap <QTcpSocket *, Player *> players() const;
         int numberOfConnectedPlayers() const;
         void playerDisconnected( Player *player, const QString &error );
         void updateOnlineStatus( const bool online );
         QString lastError() const;
-
 
         void sendMessageToPlayers( const QByteArray msg ) const;
 

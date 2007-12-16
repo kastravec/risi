@@ -47,7 +47,7 @@ class NetworkProtocol: public QObject
         QByteArray createPacket( const QByteArray &msg, qint8 type, qint8 gameID ) const;
         void readData( QAbstractSocket *client );
         qint32 sizeOfPacket( const QByteArray &packet ) const;
-        QString &lastError() const;
+        QString lastError() const;
 
     signals:
         void messageReady( const QByteArray msg, const qint8 msgType, const qint8 gameID );
