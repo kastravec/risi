@@ -251,6 +251,10 @@ void RISIui::setupActions()
     helpAction = new QAction ( tr("Help"), this );
     quitGameAction = new QAction ( tr("Quit game"), this );
     aboutRisiAction = new QAction ( tr("About risi"), this );
+
+    updateNickAction = new QAction( tr("Update"), this );
+    updateNickAction->setStatusTip( tr("Update your nick name !") );
+    connect( updateNickAction, SIGNAL(triggered( bool )), this, SLOT(updateNickActionTriggered()) );
 }
 
 /**
@@ -428,6 +432,7 @@ void RISIui::serverInfoActionTriggered()
 
 /**
  * \brief
+ * \internal
  */
 void RISIui::updateOnlineStatusSlot( const bool online )
 {
@@ -455,6 +460,16 @@ void RISIui::updateOnlineStatusSlot( const bool online )
 
 /**
  * \brief
+ */
+void RISIui::updateNickActionTriggered()
+{
+    RISIapplication::instance()->setNickname( nickNameCombobox->currentText() );
+    currentPlayer->sendNickName();
+}
+
+/**
+ * \brief
+ * \internal
  */
 void RISIui::playerDisconnectedSlot( const QString reason)
 {

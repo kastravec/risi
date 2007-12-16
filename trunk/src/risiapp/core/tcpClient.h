@@ -21,41 +21,15 @@
 #ifndef TCPCLIENT_H
 #define TCPCLIENT_H
 
-#include <QAbstractSocket>
-#include "networkProtocol.h"
+#include "connectionHandler.h"
 
-class QTcpSocket;
-
-class TcpClient: public QObject
+class TcpClient: public ConnectionHandler
 {
-    Q_OBJECT
-
     public:
         TcpClient( QObject *parent = 0 );
 
         void connectToServer( const QString &ip, qint16 port );
-        void sendMessage( const QByteArray msg, qint8 type, qint8 gameID );
-        QString serverIP() const;
-        qint16 serverPort() const;
-        QString lastError() const;
-        QString lastNetworkProtocolError() const;
-
-    signals:
-        void messageArrived( const QByteArray msg, const qint8 msgType, const qint8 gameID );
-        void connectedToServer();
-        void disconnectedFromServer();
-
-    private slots:
-        void dataArrived();
-        void networkProtocolErrorSlot();
-        void socketErrors( QAbstractSocket::SocketError errors);
-        void socketStateChanged( QAbstractSocket::SocketState state );//FIXME do i need this?
-
-    private:
-        void setupConnections();
-        NetworkProtocol networkProtocol;
-        QTcpSocket *client;
-        QString clientError;
+        void disconnectFromServer();
 };
 
 #endif

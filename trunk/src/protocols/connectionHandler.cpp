@@ -20,6 +20,7 @@
 
 #include "connectionHandler.h"
 #include "networkProtocol.h"
+#include "protocol.h"
 #include <QTcpSocket>
 
 /**
@@ -31,9 +32,11 @@
  * @param parent
  */
 ConnectionHandler::ConnectionHandler( QObject *parent, QTcpSocket *sock )
-    :QObject( parent ), networkProtocol( this ), client( sock ), clientError()
+    :QObject( parent ), clientError(), client( sock ), networkProtocol( this )
 {
-    setupConnections();
+    protocol = qobject_cast< Protocol *> ( parent );
+    if( client )
+        setupConnections();
 }
 
 /**
@@ -48,18 +51,21 @@ ConnectionHandler::~ConnectionHandler()
  */
 void ConnectionHandler::setupConnections()
 {
-    connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
+    qDebug()<<connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
 
-    connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )));
+//     qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )));
 
-    connect( &networkProtocol, SIGNAL(networkProtocolError() ), this, SLOT(networkProtocolErrorSlot()) );
+    qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SLOT(message(const QByteArray, const qint8, const qint8 )));
+
+    qDebug()<<connect( &networkProtocol, SIGNAL(networkProtocolError() ), this, SLOT(networkProtocolErrorSlot()) );
 
 //TODO QAbstractSocket::SocketError is not a registered metatype, so for queued connections, you will have to register it with Q_REGISTER_METATYPE
-    connect( client, SIGNAL(error( QAbstractSocket::SocketError )), this,SLOT(socketErrors( QAbstractSocket::SocketError )) ) ;
+    qDebug()<<connect( client, SIGNAL(error( QAbstractSocket::SocketError )), this,SLOT(socketErrors( QAbstractSocket::SocketError )) ) ;
 
-    connect( client, SIGNAL(stateChanged( QAbstractSocket::SocketState ) ), this, SLOT( socketStateChanged(QAbstractSocket::SocketState) ) );
+    qDebug()<<connect( client, SIGNAL(stateChanged( QAbstractSocket::SocketState ) ), this, SLOT( socketStateChanged(QAbstractSocket::SocketState) ) );
 
-    connect( client, SIGNAL(disconnected()), this, SIGNAL(disconnectMe()) );
+    qDebug()<<connect( client, SIGNAL(disconnected()), this, SIGNAL(disconnectedFromServer()) );
+    qDebug()<<connect( client, SIGNAL(connected()), this, SIGNAL(connectedToServer()) );
 }
 
 /**
@@ -68,7 +74,7 @@ void ConnectionHandler::setupConnections()
  * @param type type of message
  * @param gameID id of the game which the player is on
  */
-void ConnectionHandler::sendMessage( const QByteArray msg, const qint8 type, const qint8 gameID )
+qint64 ConnectionHandler::sendMessage( const QByteArray msg, const qint8 type, const qint8 gameID )
 {
     QByteArray packet = networkProtocol.createPacket( msg, type, gameID );
     qint32 size = networkProtocol.sizeOfPacket( packet );
@@ -76,14 +82,17 @@ void ConnectionHandler::sendMessage( const QByteArray msg, const qint8 type, con
     //sending the packet size first
     client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
     //sendind the packet itself
-    client->write(packet);
+    qint64 ret = client->write(packet);
+//     client->flush();
+    return ret;
 }
 
 /**
  * \brief this slot is called everytime data has arrived for the connection
  */
-void ConnectionHandler::dataArrived()
+void ConnectionHandler::dataArrived()//FIXME make readData a slot and connect the signal to it!
 {
+    qDebug()<<"dataArrived from : " <<client;
     networkProtocol.readData( client );
 }
 
@@ -91,8 +100,9 @@ void ConnectionHandler::dataArrived()
  * \brief this slot is called everytime there is a network protocol error
  * @param err ServerNetworkProtocol::ProtocolError
  */
-void ConnectionHandler::networkProtocolErrorSlot()
+void ConnectionHandler::networkProtocolErrorSlot()//FIXME handle the error!
 {
+    qDebug()<<networkProtocol.lastError();
 }
 
 /**
@@ -203,41 +213,41 @@ void ConnectionHandler::socketStateChanged( QAbstractSocket::SocketState state )
     {
         case QAbstractSocket::UnconnectedState:
         {
-            qDebug()<<"QAbstractSocket::UnconnectedState";
+            qDebug()<<"QAbstractSocket::UnconnectedState " <<client;
             break;
         }
         case QAbstractSocket::HostLookupState:
         {
-            qDebug()<<"QAbstractSocket::HostLookupState";
+            qDebug()<<"QAbstractSocket::HostLookupState" <<client;
             break;
         }
         case QAbstractSocket::ConnectingState:
         {
-            qDebug()<<"QAbstractSocket::ConnectingState";
+            qDebug()<<"QAbstractSocket::ConnectingState"<<client;
             break;
         }
         case QAbstractSocket::ConnectedState:
         {
-            qDebug()<<"QAbstractSocket::ConnectedState";
+            qDebug()<<"QAbstractSocket::ConnectedState"<<client;
             break;
         }
         case QAbstractSocket::BoundState:
         {
-            qDebug()<<"QAbstractSocket::BoundState";
+            qDebug()<<"QAbstractSocket::BoundState"<<client;
             break;
         }
         case QAbstractSocket::ClosingState:
         {
-            qDebug()<<"QAbstractSocket::ClosingState";
+            qDebug()<<"QAbstractSocket::ClosingState" <<client;
             break;
         }
         case QAbstractSocket::ListeningState:
         {
-            qDebug()<<"QAbstractSocket::ListeningState";
+            qDebug()<<"QAbstractSocket::ListeningState" <<client;
             break;
         }
         default:
-            qDebug()<<"some sort of socket state";
+            qDebug()<<"some sort of socket state" <<client;
     }
 
 }
@@ -246,9 +256,19 @@ void ConnectionHandler::socketStateChanged( QAbstractSocket::SocketState state )
  * \brief retuns the socket of the connection
  * @return const QTcpSocket *
  */
-const QTcpSocket * ConnectionHandler::socket() const
+QTcpSocket * ConnectionHandler::socket() const
 {
     return client;
+}
+
+/**
+ * \brief
+ * @param sock QTcpSocket *
+ */
+void ConnectionHandler::setSocket( QTcpSocket *sock )
+{
+    client = sock;
+//     setupConnections();
 }
 
 /**
@@ -258,4 +278,15 @@ const QTcpSocket * ConnectionHandler::socket() const
 QString ConnectionHandler::lastError() const
 {
     return clientError;
+}
+
+/**
+ * \brief
+ * @param msg
+ * @param msgType
+ * @param gameID
+ */
+void ConnectionHandler::message( const QByteArray msg, const qint8 msgType, const qint8 gameID )//FIXME this is just a workaround, has to be removed
+{
+    protocol->parseMessage( msg, msgType, gameID );
 }

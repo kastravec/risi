@@ -209,18 +209,18 @@ void RISIapplication::connectToServer( const QString &ip, int port )
     if( !isConnectedTo(ip, port) )
     {
         playControllers.append( new PlayController( this, risiUI, ip, port ) );
-        PlayController *newPlayController = playControllers.last();
-        risiUI->setCurrentPlayController( newPlayController );
+        risiUI->setCurrentPlayController( playControllers.last() );
         risiUI->initConnectionProgressDlg();
 
-        if( !newPlayController->isConnected() )
+        if( !playControllers.last()->isConnected() )
         {
-            QMessageBox::critical(0, tr("Critical Error!"), tr("Connection could not be established!") + newPlayController->lastTcpError() );
+            QMessageBox::critical(0, tr("Critical Error!"), tr("Connection could not be established!") + playControllers.last()->lastTcpError() );
             risiUI->setCurrentPlayController( 0 );
             playControllers.removeLast();
-            delete newPlayController;
             return;
         }
+        else
+            playControllers.last()->sendNickName();
     }
     else
     {

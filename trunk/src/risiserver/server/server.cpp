@@ -82,6 +82,15 @@ void Server::playerDisconnected( Player *player, const QString &err )
 }
 
 /**
+ * \brief
+ * @return QMap
+ */
+QMap <QTcpSocket *, Player *> Server::players() const
+{
+    return connectedPlayers;
+}
+
+/**
  * \brief returns the number of connected players
  * @return int
  */

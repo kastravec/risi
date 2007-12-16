@@ -43,6 +43,7 @@ class Player : public QObject
 
         void addGame( Game *gm );
         void sendChatMessage( const QByteArray msg );
+        void sendUpdatedNick( const QByteArray &nick ) const;
 
     private slots:
         void disconnected();

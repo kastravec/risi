@@ -23,9 +23,11 @@
 
 
 #include "tcpClient.h"
+#include "protocol.h"
+
 class PlayController;
 
-class ClientProtocol: public QObject
+class ClientProtocol: public Protocol
 {
     Q_OBJECT
 
@@ -33,24 +35,14 @@ class ClientProtocol: public QObject
         ClientProtocol( PlayController *pl );
         ~ClientProtocol();
 
-        enum MessageType {
-                            ChatMsg = 'c',
-                            NickName = 'n'
-                         };
-
         void sendNickName( const QString &name );
-        void sendChatMessage( const QString &msg, const QString &nick );
         void connectToServer( const QString &ip, int port );
-        QString lastError() const;
-
-    private slots:
-        void parseMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID );
 
     private:
-        void setupConnections();
-        void parseServerMessage( const QByteArray msg, const qint8 msgType );
-        void parseGameMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID );
+        void chatMessageArrived( const QByteArray &msg ) const;
+        void nickNameMessageArrived( const QByteArray & msg ) const;
 
+        void setupConnections();
         PlayController *player;
         TcpClient tcpClient;
 };

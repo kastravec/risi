@@ -55,6 +55,7 @@ class RISIui: public QMainWindow
         void serverInfoActionTriggered();
         void playerDisconnectedSlot( const QString reason);
         void updateOnlineStatusSlot( const bool online );
+        void updateNickActionTriggered();
 
     signals:
         void chosenGameToHost( const QString gameName );
@@ -90,14 +91,12 @@ class RISIui: public QMainWindow
         QAction *quitGameAction;
         QAction *serverInfoAction;
         QAction *exitAction;
-
         QAction *onlineAction;
-
         QAction *connectToIPAction;
-
         QAction *helpAction;
         QAction *aboutQtAction;
         QAction *aboutRisiAction;
+        QAction *updateNickAction;
 
         bool onlineStatus;
         QLabel *appStatus;

@@ -104,7 +104,7 @@ void NetworkProtocol::readData( QAbstractSocket * client )
         //read message
         QByteArray message;
         inStream >> message;
-
+        qDebug()<<"messageReady : "<<message <<messageType <<gameID;
         emit messageReady( message, messageType, gameID );
     }
 }
@@ -178,5 +178,8 @@ qint32 NetworkProtocol::protocolVersion() const
 {
     return version;
 }
-
+QString NetworkProtocol::lastError() const
+{
+    return error;
+}
 

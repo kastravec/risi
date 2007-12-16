@@ -102,7 +102,7 @@ void PlayController::tcpClientDisconnected()
 }
 
 /**
- * \brief
+ * \brief Sends a chat message
  * @param msg QString
  */
 void PlayController::sendChatMessage( const QString & msg )
@@ -110,6 +110,9 @@ void PlayController::sendChatMessage( const QString & msg )
     protocol.sendChatMessage( msg, RISIapplication::instance()->nickname() );
 }
 
+/**
+ * \brief Sends the player's nick name to the server
+ */
 void PlayController::sendNickName()
 {
     protocol.sendNickName( RISIapplication::instance()->nickname() );
