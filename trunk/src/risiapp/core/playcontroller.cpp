@@ -21,6 +21,7 @@
 #include "playcontroller.h"
 #include "risiUI.h"
 #include "risiApplication.h"
+#include "message.h"
 
 /**
  * \class PlayController
@@ -102,20 +103,12 @@ void PlayController::tcpClientDisconnected()
 }
 
 /**
- * \brief Sends a chat message
- * @param msg QString
+ * \brief
+ * @param msg const Message &
  */
-void PlayController::sendChatMessage( const QString & msg )
+void PlayController::sendMessage( const Message &msg )
 {
-    protocol.sendChatMessage( msg, RISIapplication::instance()->nickname() );
-}
-
-/**
- * \brief Sends the player's nick name to the server
- */
-void PlayController::sendNickName()
-{
-    protocol.sendNickName( RISIapplication::instance()->nickname() );
+    protocol.sendMessage( msg );
 }
 
 /**

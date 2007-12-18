@@ -100,6 +100,15 @@ void Player::addGame( Game *gm )
 }
 
 /**
+ * \brief
+ * @param msg const Message &
+ */
+void Player::sendMessage( const Message &msg )
+{
+    protocol.sendMessage( msg );
+}
+
+/**
  * \brief nickname Property: returns the nickname of the player
  * @return QString nickName
  */
@@ -117,20 +126,3 @@ void Player::setNickname( const QString & name )
     nick = name;
 }
 
-/**
- * \brief
- * @param msg QByteArray
- * @param msgType qint8
- */
-void Player::sendChatMessage( const QByteArray msg )
-{
-    protocol.sendChatMessage( msg );
-}
-
-/**
- * \brief
- */
-void Player::sendUpdatedNick( const QByteArray &nick ) const
-{
-
-}

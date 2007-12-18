@@ -20,6 +20,7 @@
 
 #include "protocol.h"
 #include "server.h"
+#include "message.h"
 #include <QTcpSocket>
 
 /**
@@ -32,7 +33,7 @@ Protocol::Protocol( QObject *parent, QTcpSocket * client )
     :QObject( parent ), connectionHandler( this, client )
 {
 //     if( client )
-        setupConnections();
+    setupSignalSlots();
 }
 
 /**
@@ -49,7 +50,7 @@ Protocol::~Protocol()
 void Protocol::setTcpSocket( QTcpSocket *tcpSocket )
 {
     connectionHandler.setSocket( tcpSocket );
-    setupConnections();
+    setupSignalSlots();
 }
 
 /**
@@ -72,61 +73,12 @@ QTcpSocket *Protocol::tcpSocket() const
 
 /**
  * \brief
- * @param oldNick QString &
- * @param newNick QString &
+ * @param msg const Message &
  */
-void Protocol::sendUpdatedNickname( const QString &oldNick, const QString &newNick )
+void Protocol::sendMessage( const Message &msg )
 {
-    connectionHandler.sendMessage( QString( oldNick + ESCAPENICKCHARACTER + newNick).toUtf8(), NickName, NOGAME );
-}
-
-/**
- * \brief
- * @param msg QByteArray &
- */
-void Protocol::sendChatMessage( const QByteArray &msg )
-{
-    sendChatMessage( QString( msg ) );
-}
-
-/**
- * \brief
- * @param msg const QString &
- * @param nick const QString &
- */
-void Protocol::sendChatMessage( const QString &msg, const QString &nick )
-{
-    qDebug()<<"sending message " <<msg <<nick <<"from: " <<connectionHandler.socket();
-    qint64 returnValue;
-
-    if( !nick.isEmpty() )
-         returnValue = connectionHandler.sendMessage( prepareChatMessage(msg, nick).toUtf8(), Protocol::Chat, NOGAME );
-    else
-        returnValue = connectionHandler.sendMessage( msg.toUtf8() , Protocol::Chat, NOGAME );
-
-    if( returnValue == -1 )
-        qDebug()<<"error while sendind data";
-    else
-        qDebug()<<returnValue << "bytes of data sent from : "<<connectionHandler.socket() ;
-}
-
-/**
- * \brief
- * @param msg const QString &
- * @param nick const QString &
- * @return
- */
-QString Protocol::prepareChatMessage( const QString &msg, const QString &nick ) const
-{
-    QString message = msg;
-    message.prepend( ": " );
-    message.prepend( nick );
-    int nickSize = nick.size();
-    message.prepend( QString::number( nickSize ) );
-    if( QString::number( nickSize ).size() != 2 )
-        message.prepend( ESCAPECHATCHARACTER );
-
-    return message;
+    qDebug()<<"message about to be sent : " <<msg.type() <<msg.parts();
+    connectionHandler.sendMessage( msg.messageData(), msg.type(), NOGAME );
 }
 
 /**
@@ -135,22 +87,22 @@ QString Protocol::prepareChatMessage( const QString &msg, const QString &nick ) 
  * @param msgType const qint8
  * @param gameID const qint8
  */
-void Protocol::parseMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID )
+void Protocol::messageArrived( const Message &msg )
 {
-    qDebug()<<"parseMessage " <<msg << msgType << gameID ;
-    if( gameID == NOGAME )
-        parseMessageForServer( msg, msgType );
+    qDebug()<<"messageArrived " <<msg.messageData() << msg.type() << msg.gameID();
+    if( msg.gameID() == NOGAME )
+        parseMessageForServer( msg );
     else
-        parseMessageForGame( msg, msgType, gameID );
+        parseMessageForGame( msg );
 }
 
 /**
  * \brief
  * \internal
  */
-void Protocol::setupConnections()
+void Protocol::setupSignalSlots()
 {
-    connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )), this, SLOT(parseMessage(const QByteArray, const qint8, const qint8 )) );
+    connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )), this, SLOT(messageArrived(const QByteArray, const qint8, const qint8 )) );
 
 }
 
@@ -160,16 +112,16 @@ void Protocol::setupConnections()
  * @param msg
  * @param msgType
  */
-void Protocol::parseMessageForServer( const QByteArray msg, const qint8 msgType )
+void Protocol::parseMessageForServer( const Message &msg )
 {
-    switch( msgType )
+    switch( msg.type() )
     {
-        case Chat:
+        case Message::Chat:
         {
-            chatMessageArrived( msg );
+            chatMessageArrived( msg.messageData() );
             return;
         }
-        case NickName:
+        case Message::NickName:
         {
 
             break;
@@ -198,7 +150,7 @@ void Protocol::parseMessageForServer( const QByteArray msg, const qint8 msgType 
  * @param msgType
  * @param gameID
  */
-void Protocol::parseMessageForGame( const QByteArray msg, const qint8 msgType, const qint8 gameID )
+void Protocol::parseMessageForGame( const Message &msg )
 {
 }
 

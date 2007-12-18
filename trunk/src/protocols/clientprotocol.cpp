@@ -20,6 +20,7 @@
 
 #include "clientprotocol.h"
 #include "playcontroller.h"
+#include "message.h"
 
 /**
  * \class Constructor
@@ -42,6 +43,8 @@ ClientProtocol::~ClientProtocol()
 
 void ClientProtocol::setupConnections()
 {
+// //     Protocol::setupConnections();
+//     connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8)), this, SLOT(messageArrived(const QByteArray, const qint8, const qint8)) );
     connect( &tcpClient, SIGNAL(connectedToServer()), player, SLOT(tcpClientConnected()) );
     connect( &tcpClient, SIGNAL(disconnectedFromServer()), player, SLOT(tcpClientDisconnected()) );
 }
@@ -55,20 +58,11 @@ void ClientProtocol::connectToServer( const QString &ip, int port )
 
 /**
  * \brief
+ * @param msg const Message &
  */
-void ClientProtocol::sendNickName( const QString &name )
+void ClientProtocol::chatMessageArrived( const Message &msg ) const
 {
-    tcpClient.sendMessage( name.toUtf8(), NickName, NOGAME );
-}
-
-/**
- * \brief
- * @param msg QByteArray &
- */
-void ClientProtocol::chatMessageArrived( const QByteArray &msg ) const
-{
-    QString message( msg );
-
+    qDebug()<<"chatMessageArrived at client : "<<msg.messageData();
 /*    QString nickSize = message.left(2);
 
     if( nickSize.contains( ESCAPECHATCHARACTER ) )
@@ -78,14 +72,14 @@ void ClientProtocol::chatMessageArrived( const QByteArray &msg ) const
         message =
     }*/
 
-    player->displayChatMessage( message.remove( 0, 2) );
+    player->displayChatMessage( msg.messageData() );
 }
 
 /**
  * \brief
- * @param msg const QByteArray &
+ * @param msg const Message &
  */
-void ClientProtocol::nickNameMessageArrived( const QByteArray & msg ) const
+void ClientProtocol::nickNameMessageArrived( const Message & msg ) const
 {
 }
 

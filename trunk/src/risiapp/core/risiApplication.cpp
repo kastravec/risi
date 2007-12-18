@@ -219,8 +219,8 @@ void RISIapplication::connectToServer( const QString &ip, int port )
             playControllers.removeLast();
             return;
         }
-        else
-            playControllers.last()->sendNickName();
+/*        else
+            playControllers.last()->sendNickName();*/
     }
     else
     {

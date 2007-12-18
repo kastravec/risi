@@ -23,6 +23,7 @@
 
 #include <QObject>
 
+class Message;
 class QAbstractSocket;
 
 class NetworkProtocol: public QObject
@@ -30,7 +31,7 @@ class NetworkProtocol: public QObject
     Q_OBJECT
 
     public:
-        NetworkProtocol( QObject *parent = 0 );
+        NetworkProtocol( QObject *parent = 0, QAbstractSocket *socket = 0 );
         virtual ~NetworkProtocol();
 
         Q_PROPERTY( qint32 protocolFormat READ protocolFormat WRITE setProtocolFormat SCRIPTABLE false )
@@ -45,12 +46,14 @@ class NetworkProtocol: public QObject
         qint32 protocolVersion() const;
 
         QByteArray createPacket( const QByteArray &msg, qint8 type, qint8 gameID ) const;
-        void readData( QAbstractSocket *client );
         qint32 sizeOfPacket( const QByteArray &packet ) const;
         QString lastError() const;
 
+    public slots:
+        void readData();
+
     signals:
-        void messageReady( const QByteArray msg, const qint8 msgType, const qint8 gameID );
+        void messageReady( const Message &msg );
         void networkProtocolError();
 
     private:
@@ -59,6 +62,8 @@ class NetworkProtocol: public QObject
         qint32 version;
 
         QString error;
+
+        QAbstractSocket *client;
 };
 
 #endif
