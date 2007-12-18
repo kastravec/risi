@@ -25,6 +25,7 @@
 #include <QAbstractSocket>
 class QTcpSocket;
 class Protocol;
+class Message;
 
 /**
  * list of message types:
@@ -44,16 +45,15 @@ class ConnectionHandler: public QObject
         QTcpSocket *socket() const;
         void setSocket( QTcpSocket *sock );
         QString lastError() const;
-        qint64 sendMessage( const QByteArray msg, const qint8 type, const qint8 gameID );
+        qint64 sendMessage( const Message &msg );
 
     signals:
-        void messageArrived( const QByteArray msg, const qint8 msgType, const qint8 gameID );
+        void messageArrived( const Message &msg );
         void connectedToServer();
         void disconnectedFromServer();
 
     private slots:
-        void dataArrived();
-        void message( const QByteArray msg, const qint8 msgType, const qint8 gameID );
+        void message( const Message &msg );
         void networkProtocolErrorSlot();
         void socketErrors( QAbstractSocket::SocketError errors);
         void socketStateChanged( QAbstractSocket::SocketState state );

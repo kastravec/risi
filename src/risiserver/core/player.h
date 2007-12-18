@@ -24,6 +24,7 @@
 #include "connectionHandler.h"
 #include "serverprotocol.h"
 
+class Message;
 class Game;
 class QTcpSocket;
 
@@ -40,10 +41,8 @@ class Player : public QObject
 
         QString nickname() const;
         void setNickname( const QString & name );
-
         void addGame( Game *gm );
-        void sendChatMessage( const QByteArray msg );
-        void sendUpdatedNick( const QByteArray &nick ) const;
+        void sendMessage( const Message &msg );
 
     private slots:
         void disconnected();

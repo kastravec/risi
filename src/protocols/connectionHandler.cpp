@@ -21,6 +21,7 @@
 #include "connectionHandler.h"
 #include "networkProtocol.h"
 #include "protocol.h"
+#include "message.h"
 #include <QTcpSocket>
 
 /**
@@ -51,11 +52,11 @@ ConnectionHandler::~ConnectionHandler()
  */
 void ConnectionHandler::setupConnections()
 {
-    qDebug()<<connect( client, SIGNAL( readyRead() ), this, SLOT( dataArrived() ) );
+    qDebug()<<connect( client, SIGNAL( readyRead() ), &networkProtocol, SLOT(readData()) );
 
 //     qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )));
 
-    qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SLOT(message(const QByteArray, const qint8, const qint8 )));
+    qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const Message &msg) ), this, SLOT(message(const Message &msg) ) );
 
     qDebug()<<connect( &networkProtocol, SIGNAL(networkProtocolError() ), this, SLOT(networkProtocolErrorSlot()) );
 
@@ -74,9 +75,9 @@ void ConnectionHandler::setupConnections()
  * @param type type of message
  * @param gameID id of the game which the player is on
  */
-qint64 ConnectionHandler::sendMessage( const QByteArray msg, const qint8 type, const qint8 gameID )
+qint64 ConnectionHandler::sendMessage( const Message &msg )
 {
-    QByteArray packet = networkProtocol.createPacket( msg, type, gameID );
+    QByteArray packet = networkProtocol.createPacket( msg.messageData(), msg.type(), msg.gameID() );
     qint32 size = networkProtocol.sizeOfPacket( packet );
 
     //sending the packet size first
@@ -85,15 +86,6 @@ qint64 ConnectionHandler::sendMessage( const QByteArray msg, const qint8 type, c
     qint64 ret = client->write(packet);
 //     client->flush();
     return ret;
-}
-
-/**
- * \brief this slot is called everytime data has arrived for the connection
- */
-void ConnectionHandler::dataArrived()//FIXME make readData a slot and connect the signal to it!
-{
-    qDebug()<<"dataArrived from : " <<client;
-    networkProtocol.readData( client );
 }
 
 /**
@@ -286,7 +278,7 @@ QString ConnectionHandler::lastError() const
  * @param msgType
  * @param gameID
  */
-void ConnectionHandler::message( const QByteArray msg, const qint8 msgType, const qint8 gameID )//FIXME this is just a workaround, has to be removed
+void ConnectionHandler::message( const Message &msg )//FIXME this is just a workaround, has to be removed
 {
-    protocol->parseMessage( msg, msgType, gameID );
+    protocol->messageArrived( msg );
 }

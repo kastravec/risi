@@ -27,6 +27,7 @@
 #include "clientprotocol.h"
 
 class RISIui;
+class Message;
 
 class PlayController : public QObject
 {
@@ -44,8 +45,7 @@ class PlayController : public QObject
         qint16 serverPort() const;
 
     public slots:
-        void sendChatMessage( const QString & msg );
-        void sendNickName();
+        void sendMessage( const Message &msg );
         void tcpClientConnected();
         void tcpClientDisconnected();
 
@@ -57,7 +57,6 @@ class PlayController : public QObject
         ClientProtocol protocol;
         int gameID;
         bool connectedToServer;
-
         QString ipAddress;
         qint16 port;
 };

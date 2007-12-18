@@ -31,6 +31,7 @@ class GameListUI;
 class ChatUI;
 class BoardView;
 class PlayController;
+class Message;
 
 class RISIui: public QMainWindow
 {
@@ -63,6 +64,7 @@ class RISIui: public QMainWindow
         void gameListXMLrequest( QStandardItemModel *m );
         void connectToIPSignal( const QString ip, int port );
         void goOnlineSignal( const QString nickName, const bool online );
+        void sendMessageRequest( const Message &msg );
 
     protected:
         void closeEvent( QCloseEvent *);

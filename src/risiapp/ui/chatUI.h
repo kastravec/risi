@@ -27,6 +27,7 @@ class QTextEdit;
 class QListView;
 class QPushButton;
 class LineEdit;
+class Message;
 
 class ChatUI: public QWidget
 {
@@ -38,7 +39,7 @@ class ChatUI: public QWidget
         void displayChatMessage( const QString &msg, const QString &nickName );
 
     signals:
-        void sendChatMessageRequest( const QString & msg );
+        void messageRequest( const Message & msg );
 
     private:
         QTextEdit *chatWindow;

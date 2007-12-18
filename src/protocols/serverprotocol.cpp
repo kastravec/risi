@@ -20,6 +20,7 @@
 #include "serverprotocol.h"
 #include "player.h"
 #include "server.h"
+#include "message.h"
 
 /**
  * \class ServerProtocol
@@ -41,14 +42,14 @@ ServerProtocol::~ServerProtocol()
  * \brief
  * @param msg QString
  */
-void ServerProtocol::chatMessageArrived( const QByteArray &msg ) const
+void ServerProtocol::chatMessageArrived( const Message &msg ) const
 {
-    qDebug()<<"chatMessageArrived at server from : " <<connectionHandler.socket() <<"msg: " <<msg;
+    qDebug()<<"chatMessageArrived at server from : " <<connectionHandler.socket() <<"msg: " <<msg.messageData();
     QMapIterator<QTcpSocket *, Player *> iterator( Server::instance()->players() );
     while (iterator.hasNext())
     {
         iterator.next();
-        iterator.value()->sendChatMessage( msg );
+        iterator.value()->sendMessage( msg );
     }
 }
 
@@ -56,8 +57,9 @@ void ServerProtocol::chatMessageArrived( const QByteArray &msg ) const
  * \brief
  * @param msg const QByteArray &
  */
-void ServerProtocol::nickNameMessageArrived( const QByteArray & msg ) const
+void ServerProtocol::nickNameMessageArrived( const Message & msg ) const
 {
+/*
     QString newNick( msg );
 
     QMapIterator<QTcpSocket *, Player *> iterator( Server::instance()->players() );
@@ -75,4 +77,5 @@ void ServerProtocol::nickNameMessageArrived( const QByteArray & msg ) const
         iterator.next();
         iterator.value()->sendUpdatedNick( msg );
     }
+    */
 }

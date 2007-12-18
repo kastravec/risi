@@ -24,10 +24,8 @@
 #include <QObject>
 #include "connectionHandler.h"
 
-static const int NOGAME = 0;
-static const char ESCAPECHATCHARACTER = '/';
-static const char ESCAPENICKCHARACTER = '|';
 class QTcpSocket;
+class Message;
 
 class Protocol: public QObject
 {
@@ -37,37 +35,23 @@ class Protocol: public QObject
         Protocol( QObject *parent = 0, QTcpSocket * client = 0 );
         virtual ~Protocol();
 
-        enum MessageType{
-                            GameMsg = 'g',
-                            Chat = 'c',
-                            NickName = 'n',
-                            HostRequest = 'h',
-                            HostCancel = 'l',
-                            JoinGame = 'j',
-                            LeaveGame = 'a'
-                        };
-
         QTcpSocket *tcpSocket() const;
         QString lastError() const;
-        void sendUpdatedNickname( const QString &oldNick, const QString &newNick );
-        void sendChatMessage( const QString &msg, const QString &nick = QString() );
-        void sendChatMessage( const QByteArray &msg );
 
     protected:
-        virtual QString prepareChatMessage( const QString &msg, const QString &nick ) const;
-        virtual void chatMessageArrived( const QByteArray & msg ) const = 0;
-        virtual void nickNameMessageArrived( const QByteArray & msg ) const = 0 ;
-
+        virtual void chatMessageArrived( const Message & msg ) const = 0;
+        virtual void nickNameMessageArrived( const Message & msg ) const = 0 ;
         void setTcpSocket( QTcpSocket *tcpSocket );
         ConnectionHandler connectionHandler;
 
     public slots:
-        void parseMessage( const QByteArray msg, const qint8 msgType, const qint8 gameID );
+        void messageArrived( const Message &msg );
+        void sendMessage( const Message &msg );
 
     private:
-        void parseMessageForServer( const QByteArray msg, const qint8 msgType );
-        void parseMessageForGame( const QByteArray msg, const qint8 msgType, const qint8 gameID );
-        void setupConnections();
+        void setupSignalSlots();
+        void parseMessageForServer( const Message &msg );
+        void parseMessageForGame( const Message &msg );
 };
 
 #endif

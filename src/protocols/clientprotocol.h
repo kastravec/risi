@@ -26,6 +26,7 @@
 #include "protocol.h"
 
 class PlayController;
+class Message;
 
 class ClientProtocol: public Protocol
 {
@@ -35,12 +36,11 @@ class ClientProtocol: public Protocol
         ClientProtocol( PlayController *pl );
         ~ClientProtocol();
 
-        void sendNickName( const QString &name );
         void connectToServer( const QString &ip, int port );
 
     private:
-        void chatMessageArrived( const QByteArray &msg ) const;
-        void nickNameMessageArrived( const QByteArray & msg ) const;
+        void chatMessageArrived( const Message &msg ) const;
+        void nickNameMessageArrived( const Message & msg ) const;
 
         void setupConnections();
         PlayController *player;

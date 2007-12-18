@@ -22,6 +22,7 @@
 #define SERVERPROTOCOL_H
 
 #include "protocol.h"
+class Message;
 
 class ServerProtocol : public Protocol
 {
@@ -32,8 +33,8 @@ class ServerProtocol : public Protocol
         ~ServerProtocol();
 
     private:
-        void chatMessageArrived( const QByteArray &msg ) const;
-        void nickNameMessageArrived( const QByteArray & msg ) const;
+        void chatMessageArrived( const Message &msg ) const;
+        void nickNameMessageArrived( const Message & msg ) const;
 };
 
 #endif

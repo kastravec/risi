@@ -40,6 +40,7 @@
 #include "risiUI.h"
 #include "hostGameDialog.h"
 #include "risiApplication.h"
+#include "message.h"
 
 class ConnectToIPDialog: public QDialog
 {
@@ -292,7 +293,7 @@ void RISIui::createMenus()
  */
 void RISIui::setupConnections()
 {
-//     connect( chatUI, SIGNAL(sendChatMessageRequest(const QString&)), currentPlayer,  SLOT(sendChatMessageSlot(const QString &) ) );
+    connect( chatUI, SIGNAL(messageRequest(const Message&)), this, SIGNAL(sendMessageRequest(const Message&) ) );
 }
 
  /**
@@ -464,7 +465,7 @@ void RISIui::updateOnlineStatusSlot( const bool online )
 void RISIui::updateNickActionTriggered()
 {
     RISIapplication::instance()->setNickname( nickNameCombobox->currentText() );
-    currentPlayer->sendNickName();
+//     currentPlayer->sendNickName();
 }
 
 /**
@@ -510,11 +511,12 @@ PlayController * RISIui::currentPlayController() const
 void RISIui::setCurrentPlayController( PlayController * playController )
 {
     if( currentPlayer || !playController )
-        disconnect( currentPlayer, 0, 0, 0 );
+        disconnect( this, 0, currentPlayer, 0 );
 
     currentPlayer = playController;
+
     if( currentPlayer )
-        connect( chatUI, SIGNAL(sendChatMessageRequest(const QString&)), currentPlayer, SLOT(sendChatMessage(const QString &) ) );
+        connect( this, SIGNAL(sendMessageRequest(const Message& )), currentPlayer, SLOT(sendMessage(const Message &) ) );
 }
 
 void RISIui::displayChatMessage( const QString &msg)

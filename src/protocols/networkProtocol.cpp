@@ -20,8 +20,8 @@
 
 #include <QDataStream>
 #include <QAbstractSocket>
-
 #include <qendian.h>
+#include "message.h"
 #include "networkProtocol.h"
 
 /**
@@ -29,8 +29,8 @@
  * \brief Constructor
  * @param parent  QObject
  */
-NetworkProtocol::NetworkProtocol( QObject *parent )
-    :QObject( parent ), packetSize(-1), format(10), version(11), error()
+NetworkProtocol::NetworkProtocol( QObject *parent, QAbstractSocket *socket )
+    :QObject( parent ), packetSize(-1), format(10), version(11), error(), client( socket )
 {}
 
 /**
@@ -45,7 +45,7 @@ NetworkProtocol::~NetworkProtocol()
  * \brief this slot is called when data are available for reading
  * @param client QTcpSocket
  */
-void NetworkProtocol::readData( QAbstractSocket * client )
+void NetworkProtocol::readData()
 {
     //read until there are no bytes available basically
     while (client->bytesAvailable() > 0)
@@ -98,14 +98,17 @@ void NetworkProtocol::readData( QAbstractSocket * client )
         inStream >> messageType;
 
         //read game id
-        qint8 gameID;
-        inStream >> gameID;
+        qint8 gmid;
+        inStream >> gmid;
 
         //read message
-        QByteArray message;
-        inStream >> message;
-        qDebug()<<"messageReady : "<<message <<messageType <<gameID;
-        emit messageReady( message, messageType, gameID );
+        QByteArray msg;
+        inStream >> msg;
+
+        Message message(this, );
+
+        qDebug()<<"messageReady : "<<message.messageData() <<message.type() <<message.gameID();
+        emit messageReady( message );
     }
 }
 

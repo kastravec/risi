@@ -20,7 +20,8 @@
 
 #include "chatUI.h"
 #include "lineedit.h"
-
+#include "message.h"
+#include "risiApplication.h"
 #include <QSplitter>
 #include <QTextEdit>
 #include <QLineEdit>
@@ -99,7 +100,11 @@ bool ChatUI::inputLineEditEvents( QEvent *event )
             QKeyEvent *keyEvent = static_cast<QKeyEvent *> ( event );
             if( keyEvent->key() == Qt::Key_Return )
             {
-                emit sendChatMessageRequest( inputLineEdit->text() );
+                Message message( this, Message::Chat, 2 );
+                message.addPart( RISIapplication::instance()->nickname() );
+                message.addPart( inputLineEdit->text() );
+                message.prepareMessage();
+                emit messageRequest( message );
                 inputLineEdit->clear();
             }
 
