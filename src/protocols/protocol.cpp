@@ -77,8 +77,8 @@ QTcpSocket *Protocol::tcpSocket() const
  */
 void Protocol::sendMessage( const Message &msg )
 {
-    qDebug()<<"message about to be sent : " <<msg.type() <<msg.parts();
-    connectionHandler.sendMessage( msg.messageData(), msg.type(), NOGAME );
+    qDebug()<<"Protocol sendMessage(): " <<msg.messageData() <<msg.type() <<msg.parts();
+    connectionHandler.sendMessage( msg );
 }
 
 /**
@@ -89,7 +89,7 @@ void Protocol::sendMessage( const Message &msg )
  */
 void Protocol::messageArrived( const Message &msg )
 {
-    qDebug()<<"messageArrived " <<msg.messageData() << msg.type() << msg.gameID();
+    qDebug()<<"Protocol messageArrived(): " <<msg.messageData() << msg.type() << msg.gameID();
     if( msg.gameID() == NOGAME )
         parseMessageForServer( msg );
     else
@@ -102,8 +102,7 @@ void Protocol::messageArrived( const Message &msg )
  */
 void Protocol::setupSignalSlots()
 {
-    connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )), this, SLOT(messageArrived(const QByteArray, const qint8, const qint8 )) );
-
+    connect( &connectionHandler, SIGNAL(messageArrived(const Message&) ), this, SLOT(messageArrived(const Message&) ) );
 }
 
 /**
@@ -118,7 +117,7 @@ void Protocol::parseMessageForServer( const Message &msg )
     {
         case Message::Chat:
         {
-            chatMessageArrived( msg.messageData() );
+            chatMessageArrived( msg );
             return;
         }
         case Message::NickName:

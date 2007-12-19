@@ -26,15 +26,15 @@
  * @param parent QObject *
  */
 Message::Message( QObject *parent, int flag )
-:QObject( parent ), messageType( NoType ), msgData(), msgParts( 0 ), partList(), ready( false ), partFlag( flag )
+:QObject( parent ), messageType( NoType ), msgData(), msgParts( 0 ), partList(), ready( false ), partFlag( static_cast<ContextPartFlag>(flag) )
 {}
 
 /**
  * \brief constructor
  * @param parent QObject *
  */
-Message::Message( QObject *parent, int tp, int messageParts )
-:QObject( parent ), messageType( static_cast<MessageType>(tp) ), msgData(), msgParts( messageParts ), partList(), ready( false ), partFlag( Manual )
+Message::Message( QObject *parent, char tp, int messageParts, int flag )
+:QObject( parent ), messageType( static_cast<MessageType>(tp) ), msgData(), msgParts( messageParts ), partList(), ready( false ), partFlag( static_cast<ContextPartFlag> (flag) )
 {
 }
 
@@ -42,9 +42,9 @@ Message::Message( QObject *parent, int tp, int messageParts )
  * \brief type property: Setter
  * @param tp MessageType
  */
-void Message::setType( qint tp )
+void Message::setType( char tp )
 {
-    messageType = tp;
+    messageType = static_cast<MessageType> (tp);
 }
 
 /**
@@ -175,8 +175,17 @@ bool Message::isMessageReady()
  * \brief
  * @param flag int
  */
-void Message::setPartFlag( int flag )
+void Message::setPartFlag( ContextPartFlag flag )
 {
     partFlag = flag;
+}
+
+/**
+ * \brief
+ * @param msg const QByteArray &
+ */
+void Message::setMessage( const QByteArray &msg )
+{
+    msgData = msg;
 }
 

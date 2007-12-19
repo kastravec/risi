@@ -179,7 +179,7 @@ void Server::sendMessageToPlayers( const QByteArray msg ) const
     while (i.hasNext())
     {
         i.next();
-        i.value()->sendChatMessage( msg );
+//         i.value()->sendChatMessage( msg );
     }
 }
 

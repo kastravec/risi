@@ -62,7 +62,7 @@ void ClientProtocol::connectToServer( const QString &ip, int port )
  */
 void ClientProtocol::chatMessageArrived( const Message &msg ) const
 {
-    qDebug()<<"chatMessageArrived at client : "<<msg.messageData();
+    qDebug()<<"ClientProtocol chatMessageArrived(): "<<msg.messageData();
 /*    QString nickSize = message.left(2);
 
     if( nickSize.contains( ESCAPECHATCHARACTER ) )
