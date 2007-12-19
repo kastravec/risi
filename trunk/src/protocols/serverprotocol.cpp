@@ -44,7 +44,7 @@ ServerProtocol::~ServerProtocol()
  */
 void ServerProtocol::chatMessageArrived( const Message &msg ) const
 {
-    qDebug()<<"chatMessageArrived at server from : " <<connectionHandler.socket() <<"msg: " <<msg.messageData();
+    qDebug()<<"ServerProtocol chatMessageArrived(): " <<connectionHandler.socket() <<"msg: "<<msg.messageData();
     QMapIterator<QTcpSocket *, Player *> iterator( Server::instance()->players() );
     while (iterator.hasNext())
     {

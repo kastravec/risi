@@ -33,7 +33,7 @@
  * @param parent
  */
 ConnectionHandler::ConnectionHandler( QObject *parent, QTcpSocket *sock )
-    :QObject( parent ), clientError(), client( sock ), networkProtocol( this )
+    :QObject( parent ), clientError(), client( sock ), networkProtocol( this, sock )
 {
     protocol = qobject_cast< Protocol *> ( parent );
     if( client )
@@ -56,7 +56,7 @@ void ConnectionHandler::setupConnections()
 
 //     qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )));
 
-    qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const Message &msg) ), this, SLOT(message(const Message &msg) ) );
+    qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const Message&) ), this, SLOT(message(const Message&) ) );
 
     qDebug()<<connect( &networkProtocol, SIGNAL(networkProtocolError() ), this, SLOT(networkProtocolErrorSlot()) );
 
@@ -77,14 +77,16 @@ void ConnectionHandler::setupConnections()
  */
 qint64 ConnectionHandler::sendMessage( const Message &msg )
 {
-    QByteArray packet = networkProtocol.createPacket( msg.messageData(), msg.type(), msg.gameID() );
+    QByteArray packet = networkProtocol.createPacket( msg );
     qint32 size = networkProtocol.sizeOfPacket( packet );
 
     //sending the packet size first
     client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
+
+    qDebug()<<"ConnectionHandler sendMessage(): " <<msg.messageData() <<msg.type() <<"packet: " <<packet;
     //sendind the packet itself
     qint64 ret = client->write(packet);
-//     client->flush();
+
     return ret;
 }
 
@@ -280,5 +282,6 @@ QString ConnectionHandler::lastError() const
  */
 void ConnectionHandler::message( const Message &msg )//FIXME this is just a workaround, has to be removed
 {
+    qDebug()<<"ConnectionHandler message(): " <<msg.messageData() <<msg.type();
     protocol->messageArrived( msg );
 }

@@ -108,6 +108,7 @@ void PlayController::tcpClientDisconnected()
  */
 void PlayController::sendMessage( const Message &msg )
 {
+    qDebug()<<"PlayController sendMessage(): "<<msg.messageData();
     protocol.sendMessage( msg );
 }
 

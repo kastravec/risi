@@ -39,7 +39,7 @@ class Message: public QObject
 
     public:
         Message( QObject *parent = 0, int flag = Automatic );
-        Message( QObject *parent = 0, int tp = NoType, int messageParts = 0 );
+        Message( QObject *parent = 0, char tp = NoType, int messageParts = 0, int flag = Automatic );
 
         enum ContextPartFlag { Automatic = 1, Manual = 0 };
         enum MessageType
@@ -55,7 +55,7 @@ class Message: public QObject
             };
 
         char type() const;
-        void setType( qint8 tp );
+        void setType( char tp );
         qint8 gameID() const;
         void setGameID( qint8 gmid );
         int parts() const;
@@ -67,7 +67,8 @@ class Message: public QObject
         void setPartList( const QStringList &list );
         bool isMessageReady();
         void prepareMessage();
-        void setPartFlag( int flag );
+        void setPartFlag( ContextPartFlag flag );
+        void setMessage( const QByteArray &msg );
 
     private:
         MessageType messageType;

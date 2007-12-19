@@ -21,8 +21,8 @@
 #include "player.h"
 #include "server.h"
 #include "game.h"
+#include "message.h"
 #include <QTcpSocket>
-
 
 /**
  * \class Player
@@ -105,6 +105,7 @@ void Player::addGame( Game *gm )
  */
 void Player::sendMessage( const Message &msg )
 {
+    qDebug()<<"Player sendMessage(): "<<msg.messageData();
     protocol.sendMessage( msg );
 }
 

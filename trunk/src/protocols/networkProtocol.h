@@ -45,7 +45,7 @@ class NetworkProtocol: public QObject
         void setProtocolVersion ( qint32 vers );
         qint32 protocolVersion() const;
 
-        QByteArray createPacket( const QByteArray &msg, qint8 type, qint8 gameID ) const;
+        QByteArray createPacket( const Message &msg ) const;
         qint32 sizeOfPacket( const QByteArray &packet ) const;
         QString lastError() const;
 

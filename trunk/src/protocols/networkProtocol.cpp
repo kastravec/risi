@@ -105,9 +105,10 @@ void NetworkProtocol::readData()
         QByteArray msg;
         inStream >> msg;
 
-        Message message(this, );
+        Message message( this, messageType, 0, Message::Automatic );
+        message.setMessage( msg );
 
-        qDebug()<<"messageReady : "<<message.messageData() <<message.type() <<message.gameID();
+        qDebug()<<"NetworkProtocol readData(): "<<message.messageData()<<msg <<message.type() <<message.gameID();
         emit messageReady( message );
     }
 }
@@ -119,8 +120,9 @@ void NetworkProtocol::readData()
  * @param gameID the id of the game which the player is connected
  * @return QByteArray
  */
-QByteArray NetworkProtocol::createPacket( const QByteArray &msg, qint8 type, qint8 gameID ) const
+QByteArray NetworkProtocol::createPacket( const Message &msg ) const
 {
+    qDebug()<<"NetworkProtocol createPacket(): before creating: "<<msg.messageData();
     QByteArray packet;
     QDataStream out(&packet, QIODevice::WriteOnly );
 
@@ -129,10 +131,12 @@ QByteArray NetworkProtocol::createPacket( const QByteArray &msg, qint8 type, qin
     out<<version;
 
     //inserting the message type and message itself in the packet
-    out << type;
-    out <<gameID;
-    out << msg;
+    out << msg.type();
+    out << msg.gameID();
+    out << msg.messageData();
 
+    qDebug()<<"NetworkProtocol createPacket(): " <<packet /*<<"msg.messageData(): " <<msg.messageData()*/;
+    qDebug()<<"NetworkProtocol createPacket(): " <<msg.messageData();
     return packet;
 }
 
