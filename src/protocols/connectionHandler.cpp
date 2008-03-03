@@ -52,21 +52,17 @@ ConnectionHandler::~ConnectionHandler()
  */
 void ConnectionHandler::setupConnections()
 {
-    qDebug()<<connect( client, SIGNAL( readyRead() ), &networkProtocol, SLOT(readData()) );
-
 //     qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const QByteArray, const qint8, const qint8 )), this, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8 )));
 
-    qDebug()<<connect( &networkProtocol, SIGNAL(messageReady(const Message&) ), this, SLOT(message(const Message&) ) );
+    connect( client, SIGNAL( readyRead() ), &networkProtocol, SLOT(readData()) );
+    connect( &networkProtocol, SIGNAL(messageReady(const Message&) ), this, SLOT(message(const Message&) ) );
+    connect( &networkProtocol, SIGNAL(networkProtocolError() ), this, SLOT(networkProtocolErrorSlot()) );
+    connect( client, SIGNAL(error( QAbstractSocket::SocketError )), this,SLOT(socketErrors( QAbstractSocket::SocketError )) ) ;
+    connect( client, SIGNAL(stateChanged( QAbstractSocket::SocketState ) ), this, SLOT( socketStateChanged(QAbstractSocket::SocketState) ) );
+    connect( client, SIGNAL(disconnected()), this, SIGNAL(disconnectedFromServer()) );
+    connect( client, SIGNAL(connected()), this, SIGNAL(connectedToServer()) );
 
-    qDebug()<<connect( &networkProtocol, SIGNAL(networkProtocolError() ), this, SLOT(networkProtocolErrorSlot()) );
-
-//TODO QAbstractSocket::SocketError is not a registered metatype, so for queued connections, you will have to register it with Q_REGISTER_METATYPE
-    qDebug()<<connect( client, SIGNAL(error( QAbstractSocket::SocketError )), this,SLOT(socketErrors( QAbstractSocket::SocketError )) ) ;
-
-    qDebug()<<connect( client, SIGNAL(stateChanged( QAbstractSocket::SocketState ) ), this, SLOT( socketStateChanged(QAbstractSocket::SocketState) ) );
-
-    qDebug()<<connect( client, SIGNAL(disconnected()), this, SIGNAL(disconnectedFromServer()) );
-    qDebug()<<connect( client, SIGNAL(connected()), this, SIGNAL(connectedToServer()) );
+    //TODO QAbstractSocket::SocketError is not a registered metatype, so for queued connections, you will have to register it with Q_REGISTER_METATYPE
 }
 
 /**
@@ -83,9 +79,13 @@ qint64 ConnectionHandler::sendMessage( const Message &msg )
     //sending the packet size first
     client->write(reinterpret_cast<char*>(&size), sizeof(qint32));
 
-    qDebug()<<"ConnectionHandler sendMessage(): " <<msg.messageData() <<msg.type() <<"packet: " <<packet;
+//     qDebug()<<"ConnectionHandler sendMessage():"<<"messageData:"<<msg.messageData()<<"packet size: " <<packet.size();
+
     //sendind the packet itself
     qint64 ret = client->write(packet);
+    client->flush();
+
+//     qDebug()<<ret <<"bytes of data sent from client:" << client;
 
     return ret;
 }
@@ -109,92 +109,77 @@ void ConnectionHandler::socketErrors( QAbstractSocket::SocketError errors)
     {
         case QAbstractSocket::ConnectionRefusedError:
         {
-            qDebug()<<"QAbstractSocket::ConnectionRefusedError ";
             clientError = tr( "The connection was refused by the peer (or timed out) !" ) ;
             break;
         }
         case QAbstractSocket::RemoteHostClosedError:
         {
-            qDebug()<<"QAbstractSocket::RemoteHostClosedError";
             clientError = tr( "connection was closed by remote host/client!" );
             break;
         }
         case QAbstractSocket::HostNotFoundError:
         {
-            qDebug()<<"QAbstractSocket::HostNotFoundError";
             clientError = tr( " The host address was not found !" );
             break;
         }
         case QAbstractSocket::SocketAccessError:
         {
-            qDebug()<<"QAbstractSocket::SocketAccessError";
             clientError = tr( "The socket operation failed because the application lacked the required privileges for accesing sockets !" );
             break;
         }
         case QAbstractSocket::SocketResourceError:
         {
-            qDebug()<<"QAbstractSocket::SocketResourceError";
             clientError = tr( "The local system ran out of resources (e.g., too many sockets) !" );
             break;
         }
         case QAbstractSocket::SocketTimeoutError:
         {
-            qDebug()<<"QAbstractSocket::SocketTimeoutError";
             clientError = tr( "The socket operation timed out !" );
             break;
         }
         case QAbstractSocket::DatagramTooLargeError:
         {
-            qDebug()<<"QAbstractSocket::DatagramTooLargeError";
             clientError = tr( "The datagram was larger than the operating system's limit (which can be as low as 8192 bytes) !" );
             break;
         }
         case QAbstractSocket::NetworkError:
         {
-            qDebug()<<"QAbstractSocket::NetworkError";
             clientError = tr( "An error occurred with the network (e.g., the network cable was accidentally plugged out?)" );
             break;
         }
         case QAbstractSocket::AddressInUseError:
         {
-            qDebug()<<"QAbstractSocket::AddressInUseError";
             clientError = tr("The address specified to QUdpSocket::bind() is already in use and was set to be exclusive !");
             break;
         }
         case QAbstractSocket::SocketAddressNotAvailableError:
         {
-            qDebug()<<"QAbstractSocket::SocketAddressNotAvailableError";
             clientError = tr( "The address specified to QUdpSocket::bind() does not belong to the host ! " );
             break;
         }
         case QAbstractSocket::UnsupportedSocketOperationError:
         {
-            qDebug()<<"QAbstractSocket::UnsupportedSocketOperationError";
             clientError = tr( "The requested socket operation is not supported by the local operating system (e.g., lack of IPv6 support) ! " );
             break;
         }
         case QAbstractSocket::ProxyAuthenticationRequiredError:
         {
-            qDebug()<<"QAbstractSocket::ProxyAuthenticationRequiredError";
             clientError = tr( "The socket is using a proxy, and the proxy requires authentication" );
             break;
         }
         case QAbstractSocket::UnknownSocketError:
         {
-            qDebug()<<"QAbstractSocket::UnknownSocketError";
             clientError = tr("An unidentified error occurred !");
             break;
         }
         case QAbstractSocket::UnfinishedSocketOperationError:
         {
-            qDebug()<<"QAbstractSocket::UnfinishedSocketOperationError";
-            clientError = tr( "Used by QAbstractSocketEngine only, The last operation attempted has not finished yet (still in progress in the background) !" );
+             clientError = tr( "Used by QAbstractSocketEngine only, The last operation attempted has not finished yet (still in progress in the background) !" );
             break;
         }
         default:
-            qDebug()<<"some sort of error";
+            clientError = tr( "Some sort of error with the socket" );
     }
-
 }
 
 /**
@@ -207,37 +192,37 @@ void ConnectionHandler::socketStateChanged( QAbstractSocket::SocketState state )
     {
         case QAbstractSocket::UnconnectedState:
         {
-            qDebug()<<"QAbstractSocket::UnconnectedState " <<client;
+//             qDebug()<<"QAbstractSocket::UnconnectedState " <<client;
             break;
         }
         case QAbstractSocket::HostLookupState:
         {
-            qDebug()<<"QAbstractSocket::HostLookupState" <<client;
+//             qDebug()<<"QAbstractSocket::HostLookupState" <<client;
             break;
         }
         case QAbstractSocket::ConnectingState:
         {
-            qDebug()<<"QAbstractSocket::ConnectingState"<<client;
+//             qDebug()<<"QAbstractSocket::ConnectingState"<<client;
             break;
         }
         case QAbstractSocket::ConnectedState:
         {
-            qDebug()<<"QAbstractSocket::ConnectedState"<<client;
+//             qDebug()<<"QAbstractSocket::ConnectedState"<<client;
             break;
         }
         case QAbstractSocket::BoundState:
         {
-            qDebug()<<"QAbstractSocket::BoundState"<<client;
+//             qDebug()<<"QAbstractSocket::BoundState"<<client;
             break;
         }
         case QAbstractSocket::ClosingState:
         {
-            qDebug()<<"QAbstractSocket::ClosingState" <<client;
+//             qDebug()<<"QAbstractSocket::ClosingState" <<client;
             break;
         }
         case QAbstractSocket::ListeningState:
         {
-            qDebug()<<"QAbstractSocket::ListeningState" <<client;
+//             qDebug()<<"QAbstractSocket::ListeningState" <<client;
             break;
         }
         default:
@@ -262,6 +247,7 @@ QTcpSocket * ConnectionHandler::socket() const
 void ConnectionHandler::setSocket( QTcpSocket *sock )
 {
     client = sock;
+    networkProtocol.setClientSocket( client );
 //     setupConnections();
 }
 
@@ -282,6 +268,6 @@ QString ConnectionHandler::lastError() const
  */
 void ConnectionHandler::message( const Message &msg )//FIXME this is just a workaround, has to be removed
 {
-    qDebug()<<"ConnectionHandler message(): " <<msg.messageData() <<msg.type();
+//     qDebug()<<"ConnectionHandler message(): " /*<<msg.messageData() <<msg.type() */<<"client:" <<client;
     protocol->messageArrived( msg );
 }

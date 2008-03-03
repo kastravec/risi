@@ -30,6 +30,7 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QStringListModel>
 
 /**
  * \brief Constructor
@@ -51,6 +52,7 @@ void ChatUI::initUI()
     chatWindow->setReadOnly( true );
 
     playerListWindow = new QListView (this);
+    playerListModel = new QStringListModel( playerListWindow );
     inputLineEdit = new LineEdit(this);
 
     QSplitter *splitter = new QSplitter(this);
@@ -100,7 +102,8 @@ bool ChatUI::inputLineEditEvents( QEvent *event )
             QKeyEvent *keyEvent = static_cast<QKeyEvent *> ( event );
             if( keyEvent->key() == Qt::Key_Return )
             {
-                Message message( this, Message::Chat, 2 );
+                Message message( this, Message::Chat, 2, Message::Manual );
+                qDebug()<<"ChatUI : " <<RISIapplication::instance()->nickname();
                 message.addPart( RISIapplication::instance()->nickname() );
                 message.addPart( inputLineEdit->text() );
                 message.prepareMessage();
@@ -120,4 +123,9 @@ bool ChatUI::inputLineEditEvents( QEvent *event )
 void ChatUI::displayChatMessage( const QString &msg, const QString &nickName )
 {
     chatWindow->append(msg);
+}
+
+void ChatUI::setListOfPlayers( const QStringList &list )
+{
+    playerListModel->setStringList( list );
 }

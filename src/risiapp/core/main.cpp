@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
 
     if( returnCode == QDialog::Accepted )
     {
+        RISIapplication::instance()->setNickname( initDialog.nickName() );
         RISIapplication::instance()->initUI();
 
         if( !RISIapplication::instance()->initServer() )
@@ -44,11 +45,8 @@ int main(int argc, char *argv[])
             return 42;
         }
 
-        RISIapplication::instance()->setNickname( initDialog.nickName() );
         returnCode = app.exec();
         RISIapplication::instance()->deleteLater();
     }
-
     return returnCode;
 }
-

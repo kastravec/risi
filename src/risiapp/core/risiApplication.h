@@ -56,12 +56,14 @@ class RISIapplication: public QObject
         QList <QString> broadcastIPaddresses() const;
         qint16 serverPort() const;
         int numberOfConnectedPlayers() const;
+        void updateNickName( const QString &oldNick, const QString &newNick );
 
     public slots:
         void connectToServer( const QString &ip, int port );
         void goOnlineSlot( const QString nickName, const bool onlineStatus );
 
     signals:
+        void nickChanged( const QString &oldNick, const QString &newNick );
         void onlineStatusUpdate( bool onlineStatus );
         void serverStatusUpdate( bool serverStatus );
 

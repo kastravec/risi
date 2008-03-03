@@ -22,7 +22,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QNetworkInterface>
-
+#include "message.h"
 #include "server.h"
 #include "risiUI.h"
 #include "httpController.h"
@@ -59,10 +59,11 @@ RISIapplication* RISIapplication::instance()
  */
 bool RISIapplication::initServer()
 {
-    server = Server::instance();
+    server = Server::instance();//getting the Server instance
 
     setupConnections();
 
+    //reading settings
     QSettings settings;
     settings.beginGroup( "Server" );
     QVariant v = settings.value( "port", 2222 );
@@ -71,10 +72,11 @@ bool RISIapplication::initServer()
     bool ok;
     int port = v.toInt( &ok );
     if( ok )
-        server->listen(QHostAddress::Any, port );
+        server->listen(QHostAddress::Any, port ); //starting server, listening to 'port'
     else
         QMessageBox::warning(0, tr("Error: "), tr("Internal application error due to conversion from QVariant to integer! Please, try restart the application and submit a bug report ! ") );
 
+    //connecting the local player
     if( server->isListening() )
         connectToServer( broadcastIPaddresses().at( 0 ), server->serverPort() );
 
@@ -119,7 +121,10 @@ QString RISIapplication::nickname() const
  */
 void RISIapplication::setNickname( const QString & nm )
 {
+    QString oldNick = name;
     name = nm;
+    qDebug()<<"RISIapplication setNickname: " <<name;
+//     emit nickChanged( oldNick, name );
 }
 
 /**
@@ -138,6 +143,16 @@ RISIapplication::AppState RISIapplication::state() const
 void RISIapplication::setState( RISIapplication::AppState st )
 {
     appstate = st;
+}
+
+/**
+ *
+ * @param oldNick
+ * @param newNick
+ */
+void RISIapplication::updateNickName( const QString &oldNick, const QString &newNick )
+{
+
 }
 
 /**
@@ -208,26 +223,33 @@ void RISIapplication::connectToServer( const QString &ip, int port )
 {
     if( !isConnectedTo(ip, port) )
     {
-        playControllers.append( new PlayController( this, risiUI, ip, port ) );
-        risiUI->setCurrentPlayController( playControllers.last() );
+        //creating a new player or so called player-controller
+        PlayController *newPlayer = new PlayController( this, risiUI, ip, port );
+        playControllers.append( newPlayer );
+        risiUI->setCurrentPlayController( playControllers.last() ); //making it the current one
         risiUI->initConnectionProgressDlg();
 
         if( !playControllers.last()->isConnected() )
         {
+            delete newPlayer;
             QMessageBox::critical(0, tr("Critical Error!"), tr("Connection could not be established!") + playControllers.last()->lastTcpError() );
-            risiUI->setCurrentPlayController( 0 );
-            playControllers.removeLast();
+            risiUI->setCurrentPlayController( 0 );//removing the current player
+            playControllers.removeLast();//removing unconnected players
             return;
         }
-/*        else
-            playControllers.last()->sendNickName();*/
+        else
+        {
+            Message message( this, Message::NickName, 1, Message::Manual );
+            message.addPart( name );
+            message.prepareMessage();
+            newPlayer->sendMessage( message );
+        }
     }
     else
     {
         QMessageBox::warning(0, tr("WARNING ! "), tr("Seems that you are already connected to: ")+ip+" !!" );
         return;
     }
-
 }
 
 /**

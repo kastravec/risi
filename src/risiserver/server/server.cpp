@@ -88,6 +88,7 @@ void Server::playerDisconnected( Player *player, const QString &err )
 QMap <QTcpSocket *, Player *> Server::players() const
 {
     return connectedPlayers;
+
 }
 
 /**

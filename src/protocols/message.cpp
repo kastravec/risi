@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "message.h"
+#include <QDebug>
 
 /**
  * \class Message
@@ -26,7 +27,7 @@
  * @param parent QObject *
  */
 Message::Message( QObject *parent, int flag )
-:QObject( parent ), messageType( NoType ), msgData(), msgParts( 0 ), partList(), ready( false ), partFlag( static_cast<ContextPartFlag>(flag) )
+:QObject( parent ), messageType( NoType ), msgData(), msgParts( 0 ), partList(), gameid( NOGAME ), ready( false ), partFlag( static_cast<ContextPartFlag>(flag) )
 {}
 
 /**
@@ -34,7 +35,7 @@ Message::Message( QObject *parent, int flag )
  * @param parent QObject *
  */
 Message::Message( QObject *parent, char tp, int messageParts, int flag )
-:QObject( parent ), messageType( static_cast<MessageType>(tp) ), msgData(), msgParts( messageParts ), partList(), ready( false ), partFlag( static_cast<ContextPartFlag> (flag) )
+    :QObject( parent ), messageType( static_cast<MessageType>(tp) ), msgData(), msgParts( messageParts ), partList(), gameid( NOGAME ), ready( false ), partFlag( static_cast<ContextPartFlag> (flag) )
 {
 }
 
@@ -108,6 +109,7 @@ void Message::setNumberOfParts( int p )
 void Message::addPart( const QString &part )
 {
     partList.append( part );
+    ready = false;
 }
 
 /**
@@ -117,6 +119,7 @@ void Message::addPart( const QString &part )
 void Message::addPart( const QByteArray &part )
 {
     partList.append( QString( part ) );
+    ready = false;
 }
 
 /**
@@ -144,22 +147,88 @@ void Message::setPartList( const QStringList &list )
  */
 void Message::prepareMessage()
 {
-/*
-    QString message = msg;
-    message.prepend( ": " );
-    message.prepend( nick );
-    int nickSize = nick.size();
-    message.prepend( QString::number( nickSize ) );
-    if( QString::number( nickSize ).size() != 2 )
-        message.prepend( ESCAPECHATCHARACTER );*/
-
-
-    msgData.clear();
-
-    for( int i = 0; i < partList.count(); ++i )
-        msgData.append( partList.at( i ) );
+    switch( messageType )
+    {
+        case Chat: // 2|nickname:chatmsg
+        {
+            if( partFlag == Manual )
+            {
+                msgData.clear();
+                msgData.append( partList.first() );
+                msgData.append( PARTSEPARATOR );
+                msgData.append( partList.last() );
+                partList.clear();
+            }
+            break;
+        }
+        case NickName: // 1|nickname  ##  2|oldNick:newNick
+        {
+            prepareNickMessage();
+            break;
+        }
+        case NickNameUpdateOther:// 2|oldNick:newNick oldNick can be empty which means that new player connected or new nick was not accepted
+        {
+            if( partFlag == Automatic )
+            {
+                int msgseparatorIndex = msgData.indexOf( MESSAGESEPARATOR );
+                msgParts = 2;//TODO has to be 2 always !
+                QByteArray msg1 = msgData.right( (msgData.count() - msgseparatorIndex) - 1 );
+                int partseparatorIndex = msg1.indexOf( PARTSEPARATOR );
+                partList.append( msg1.left( partseparatorIndex ) );
+                partList.append( msg1.right( 1 ) );
+            }
+            else if( partFlag == Manual )
+            {
+                msgData.clear();
+                msgData.append( msgParts );
+                msgData.append( MESSAGESEPARATOR );
+                msgData.append( partList.at( 0 ) );
+                msgData.append( PARTSEPARATOR );
+                msgData.append( partList.at( 1 ) );
+            }
+            break;
+        }
+    }
 
     ready = true;
+}
+
+/**
+ * \brief Prepares messages of type NickName
+ * \internal
+ */
+void Message::prepareNickMessage()
+{
+    if( partFlag == Manual )
+    {
+        msgData.clear();
+        msgData.append( QString::number( msgParts ) );
+        msgData.append( MESSAGESEPARATOR );
+        for( int i = 0; i < msgParts; ++i )
+        {
+            if( i == 1 )
+                msgData.append( PARTSEPARATOR );
+            else
+                msgData.append( partList.at( i ) );
+        }
+        partList.clear();//TODO do i have to clear the partlist?
+    }
+    else if( partFlag == Automatic )
+    {
+        int separatorIndex = msgData.indexOf( MESSAGESEPARATOR );
+        msgParts = msgData.left( separatorIndex ).toInt();
+
+        if( msgParts == 1 )
+            partList.append( msgData.right( (msgData.count()-separatorIndex) - 1 ) );
+        else if( msgParts == 2 )
+        {
+            int partseparatorIndex = msgData.indexOf( PARTSEPARATOR );
+            QByteArray msg1 = msgData.right( (msgData.count() - separatorIndex) - 1 );
+            int partIndex = (partseparatorIndex - separatorIndex) - 1;
+            partList.append( msg1.left( partIndex ) );
+            partList.append( msg1.right( partIndex ) );
+        }
+    }
 }
 
 /**
@@ -189,3 +258,12 @@ void Message::setMessage( const QByteArray &msg )
     msgData = msg;
 }
 
+/**
+ * \brief
+ * @param index int
+ * @return QString
+ */
+QString Message::messagePartAt( int index ) const
+{
+    return partList.at( index );
+}

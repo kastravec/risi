@@ -31,7 +31,7 @@
  * @param port int
  */
 PlayController::PlayController( QObject *parent, RISIui *ui, const QString &ip, int pt )
-    :QObject( parent ), board( this ), risiUI( ui ), protocol( this ), gameID( -1 ), connectedToServer( false ), ipAddress( ip ), port( pt )
+    :QObject( parent ), board( this ), risiUI( ui ), protocol( this ), gameID( -1 ), connectedToServer( false ), ipAddress( ip ), port( pt ), playersOnServer()
 {
     setupConnections();
     protocol.connectToServer( ip, port );
@@ -108,7 +108,7 @@ void PlayController::tcpClientDisconnected()
  */
 void PlayController::sendMessage( const Message &msg )
 {
-    qDebug()<<"PlayController sendMessage(): "<<msg.messageData();
+//     qDebug()<<"PlayController sendMessage(): "<<msg.messageData();
     protocol.sendMessage( msg );
 }
 
@@ -120,3 +120,31 @@ void PlayController::displayChatMessage( const QString &msg )
 {
     risiUI->displayChatMessage( msg );
 }
+
+QStringList PlayController::players() const
+{
+    return playersOnServer;
+}
+
+void PlayController::setNickName( const QString &oldNick, const QString &newNick )
+{
+    if( RISIapplication::instance()->nickname() == oldNick )
+        RISIapplication::instance()->setNickname( newNick );
+    else
+    {
+        for( int i = 0; i < playersOnServer.count(); ++i )
+        {
+            if( playersOnServer.at( i ) == oldNick )
+            {
+                playersOnServer.replace( i, newNick );
+                break;
+            }
+        }
+    }
+    qDebug()<<" PlayController setNickName: " <<newNick;
+    emit nickNameChanged( oldNick, newNick );
+}
+
+void PlayController::setNickConfirmation( const QString &nick )
+{}
+

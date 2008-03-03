@@ -88,13 +88,7 @@ void Protocol::sendMessage( const Message &msg )
  * @param gameID const qint8
  */
 void Protocol::messageArrived( const Message &msg )
-{
-    qDebug()<<"Protocol messageArrived(): " <<msg.messageData() << msg.type() << msg.gameID();
-    if( msg.gameID() == NOGAME )
-        parseMessageForServer( msg );
-    else
-        parseMessageForGame( msg );
-}
+{}
 
 /**
  * \brief
@@ -104,52 +98,3 @@ void Protocol::setupSignalSlots()
 {
     connect( &connectionHandler, SIGNAL(messageArrived(const Message&) ), this, SLOT(messageArrived(const Message&) ) );
 }
-
-/**
- * \brief
- * \internal
- * @param msg
- * @param msgType
- */
-void Protocol::parseMessageForServer( const Message &msg )
-{
-    switch( msg.type() )
-    {
-        case Message::Chat:
-        {
-            chatMessageArrived( msg );
-            return;
-        }
-        case Message::NickName:
-        {
-
-            break;
-        }
-        case 'h': //HostRequest
-        {
-            break;
-        }
-        case 'l': //HostCancel
-        {
-            break;
-        }
-        case 'j': //JoinGame
-        {
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-/**
- * \brief
- * \internal
- * @param msg
- * @param msgType
- * @param gameID
- */
-void Protocol::parseMessageForGame( const Message &msg )
-{
-}
-

@@ -52,15 +52,15 @@ HEADERS += src/protocols/networkProtocol.h \
            src/risiapp/core/playcontroller.h \
            src/risiserver/core/game.h \
            src/risiserver/core/player.h \
-           src/risiserver/server/server.h 
- 
+           src/risiserver/server/server.h
+
 SOURCES += src/protocols/networkProtocol.cpp \
            src/protocols/serverprotocol.cpp \
 		   src/protocols/clientprotocol.cpp \
 		   src/protocols/connectionHandler.cpp \
 		   src/protocols/protocol.cpp \
 		   src/protocols/message.cpp \
-           src/risiapp/http/httpController.cpp \
+		   src/risiapp/http/httpController.cpp \
            src/risiapp/ui/chatUI.cpp \
            src/risiapp/ui/editGamesUI.cpp \
            src/risiapp/ui/gameListUI.cpp \
@@ -80,4 +80,4 @@ SOURCES += src/protocols/networkProtocol.cpp \
            src/risiapp/core/playcontroller.cpp \         
            src/risiserver/core/game.cpp \
            src/risiserver/core/player.cpp \
-           src/risiserver/server/server.cpp 
+           src/risiserver/server/server.cpp

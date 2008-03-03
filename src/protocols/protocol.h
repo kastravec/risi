@@ -39,19 +39,15 @@ class Protocol: public QObject
         QString lastError() const;
 
     protected:
-        virtual void chatMessageArrived( const Message & msg ) const = 0;
-        virtual void nickNameMessageArrived( const Message & msg ) const = 0 ;
         void setTcpSocket( QTcpSocket *tcpSocket );
         ConnectionHandler connectionHandler;
 
     public slots:
-        void messageArrived( const Message &msg );
+        virtual void messageArrived( const Message &msg );
         void sendMessage( const Message &msg );
 
     private:
         void setupSignalSlots();
-        void parseMessageForServer( const Message &msg );
-        void parseMessageForGame( const Message &msg );
 };
 
 #endif
