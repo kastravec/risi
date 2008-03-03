@@ -31,7 +31,7 @@
  * @param parent Parent
  */
 Player::Player( QTcpSocket *client, QObject *parent )
-    :QObject( parent ), games(), nick( "player"+QString::number( client->socketDescriptor()*2 ) ), protocol( client, this )
+    :QObject( parent ), games(), nick( "player"+QString::number( client->socketDescriptor()*2 ) ), protocol( this, client )
 {
     setupConnections();
 }

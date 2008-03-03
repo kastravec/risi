@@ -22,7 +22,7 @@
 #define CHATUI_H
 
 #include <QWidget>
-
+class QStringListModel;
 class QTextEdit;
 class QListView;
 class QPushButton;
@@ -37,6 +37,7 @@ class ChatUI: public QWidget
         ChatUI(QWidget *parent = 0);
 
         void displayChatMessage( const QString &msg, const QString &nickName );
+        void setListOfPlayers( const QStringList &list );
 
     signals:
         void messageRequest( const Message & msg );
@@ -45,6 +46,7 @@ class ChatUI: public QWidget
         QTextEdit *chatWindow;
         LineEdit *inputLineEdit;
         QListView *playerListWindow;
+        QStringListModel *playerListModel;
 
         bool eventFilter ( QObject * watched, QEvent * event );
         bool inputLineEditEvents( QEvent *event );

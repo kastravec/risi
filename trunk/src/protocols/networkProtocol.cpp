@@ -47,6 +47,8 @@ NetworkProtocol::~NetworkProtocol()
  */
 void NetworkProtocol::readData()
 {
+//     qDebug()<<"NetworkProtocol readData client:"<<client;
+
     //read until there are no bytes available basically
     while (client->bytesAvailable() > 0)
     {
@@ -107,8 +109,10 @@ void NetworkProtocol::readData()
 
         Message message( this, messageType, 0, Message::Automatic );
         message.setMessage( msg );
+        message.prepareMessage();
 
-        qDebug()<<"NetworkProtocol readData(): "<<message.messageData()<<msg <<message.type() <<message.gameID();
+//         qDebug()<<"NetworkProtocol readData(): "<<"msg.size():" << msg.size() <<"message.messageData(): "<<message.messageData().size();
+
         emit messageReady( message );
     }
 }
@@ -122,7 +126,8 @@ void NetworkProtocol::readData()
  */
 QByteArray NetworkProtocol::createPacket( const Message &msg ) const
 {
-    qDebug()<<"NetworkProtocol createPacket(): before creating: "<<msg.messageData();
+//     qDebug()<<"NetworkProtocol createPacket(): before creating: "<<msg.messageData()<<"msg.gameID()" <<msg.gameID();
+
     QByteArray packet;
     QDataStream out(&packet, QIODevice::WriteOnly );
 
@@ -131,12 +136,12 @@ QByteArray NetworkProtocol::createPacket( const Message &msg ) const
     out<<version;
 
     //inserting the message type and message itself in the packet
-    out << msg.type();
-    out << msg.gameID();
+    out << ( qint8 )msg.type();
+    out << ( qint8 )msg.gameID();
     out << msg.messageData();
 
-    qDebug()<<"NetworkProtocol createPacket(): " <<packet /*<<"msg.messageData(): " <<msg.messageData()*/;
-    qDebug()<<"NetworkProtocol createPacket(): " <<msg.messageData();
+//     qDebug()<<"NetworkProtocol createPacket(): " <<packet <<"packet size: "<<packet.size();
+
     return packet;
 }
 
@@ -190,3 +195,11 @@ QString NetworkProtocol::lastError() const
     return error;
 }
 
+/**
+ * \brief
+ * @param socket QAbstractSocket *socket
+ */
+void NetworkProtocol::setClientSocket( QAbstractSocket * socket )
+{
+    client = socket;
+}

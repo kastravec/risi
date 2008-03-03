@@ -45,6 +45,9 @@ class RISIui: public QMainWindow
         void displayChatMessage( const QString &msg );
         void initConnectionProgressDlg();
 
+    public slots:
+        void nickChangedSlot( const QString &oldNick, const QString &newNick );
+
     private slots:
         void settingsActionTriggered();
         void exitActionTriggered();

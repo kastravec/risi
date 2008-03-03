@@ -25,9 +25,9 @@
 #include <QByteArray>
 #include <QStringList>
 
-static const int NOGAME = 0;
-static const char ESCAPECHATCHARACTER = '/';
-static const char ESCAPENICKCHARACTER = '|';
+static const qint8 NOGAME = 0;
+static const char PARTSEPARATOR = ':';
+static const char MESSAGESEPARATOR = '|';
 
 class Message: public QObject
 {
@@ -44,9 +44,11 @@ class Message: public QObject
         enum ContextPartFlag { Automatic = 1, Manual = 0 };
         enum MessageType
             {
+                Connected = 'o',
                 GameMsg = 'g',
                 Chat = 'c',
                 NickName = 'n',
+                NickNameUpdateOther = 'm',
                 HostRequest = 'h',
                 HostCancel = 'l',
                 JoinGame = 'j',
@@ -69,8 +71,11 @@ class Message: public QObject
         void prepareMessage();
         void setPartFlag( ContextPartFlag flag );
         void setMessage( const QByteArray &msg );
+        QString messagePartAt( int index ) const;
 
     private:
+        void prepareNickMessage();
+
         MessageType messageType;
         QByteArray msgData;
         int msgParts;

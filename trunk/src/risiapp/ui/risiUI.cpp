@@ -202,6 +202,11 @@ void RISIui::createStatusBar()
     onlineStatusLabel = new QLabel( status, this );
     statBar->addPermanentWidget( onlineStatusLabel );
     appStatus->setText( tr("Ready.") );
+    appStatus->setFrameShape( QFrame::Panel );
+    appStatus->setFrameShadow( QFrame::Raised );
+    appStatus->setFrameStyle( QFrame::NoFrame );
+    appStatus->setLineWidth( 0 );
+//     appStatus->setFrameWidth(0);
     statBar->addWidget( appStatus );
 }
 
@@ -506,7 +511,7 @@ PlayController * RISIui::currentPlayController() const
 
 /**
  * \brief currentPlayController property: Sets the currentPlayController
- * @param PlayController *
+ * @param PlayController *test
  */
 void RISIui::setCurrentPlayController( PlayController * playController )
 {
@@ -516,7 +521,10 @@ void RISIui::setCurrentPlayController( PlayController * playController )
     currentPlayer = playController;
 
     if( currentPlayer )
+    {
         connect( this, SIGNAL(sendMessageRequest(const Message& )), currentPlayer, SLOT(sendMessage(const Message &) ) );
+        connect( currentPlayer, SIGNAL(nickNameChanged(const QString&, const QString&)), this, SLOT(nickChangedSlot(const QString&, const QString&)) );
+    }
 }
 
 void RISIui::displayChatMessage( const QString &msg)
@@ -530,4 +538,16 @@ void RISIui::displayChatMessage( const QString &msg)
 void RISIui::initConnectionProgressDlg()
 {
     ConnectionProgressDlg pgrogressDialog( this, currentPlayer );
+}
+
+/**
+ *
+ */
+void RISIui::nickChangedSlot( const QString &oldNick, const QString &newNick )
+{
+//     qDebug()<<"RISIui nickChangedSlot: " <<newNick;
+    nickNameCombobox->addItem( newNick );
+    nickNameCombobox->setCurrentIndex( 1 );
+    chatUI->displayChatMessage( newNick, RISIapplication::instance()->nickname() );
+    chatUI->setListOfPlayers( currentPlayer->players() );
 }

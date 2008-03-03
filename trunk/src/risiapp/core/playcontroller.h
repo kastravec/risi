@@ -40,14 +40,20 @@ class PlayController : public QObject
 
         bool isConnected() const;
         void displayChatMessage( const QString &msg );
+        void setNickConfirmation( const QString &nick );
         QString lastTcpError() const;
         QString serverIP() const;
         qint16 serverPort() const;
+        QStringList players() const;
+        void setNickName( const QString &oldNick, const QString &newNick );
 
     public slots:
         void sendMessage( const Message &msg );
         void tcpClientConnected();
         void tcpClientDisconnected();
+
+    signals:
+        void nickNameChanged( const QString &oldNick, const QString &newNick );
 
     private:
         void setupConnections();
@@ -59,6 +65,7 @@ class PlayController : public QObject
         bool connectedToServer;
         QString ipAddress;
         qint16 port;
+        QStringList playersOnServer;
 };
 
 #endif

@@ -27,8 +27,8 @@
  * The class responsible for the game protocol
  * \brief Constructor
  */
-ServerProtocol::ServerProtocol( QTcpSocket * client, QObject *parent  )
-    :Protocol( parent, client )
+ServerProtocol::ServerProtocol( Player *parent, QTcpSocket * client )
+    :Protocol( parent, client ), player( parent )
 {}
 
 /**
@@ -38,44 +38,115 @@ ServerProtocol::~ServerProtocol()
 {
 }
 
-/**
- * \brief
- * @param msg QString
- */
-void ServerProtocol::chatMessageArrived( const Message &msg ) const
+void ServerProtocol::nickNameMessageArrived( QObject *sender, const Message & msg )
 {
-    qDebug()<<"ServerProtocol chatMessageArrived(): " <<connectionHandler.socket() <<"msg: "<<msg.messageData();
+    bool keepNewNick = false;
+    int msgParts = msg.parts();
+    QString newNick;
+    QString oldNick = player->nickname();
     QMapIterator<QTcpSocket *, Player *> iterator( Server::instance()->players() );
-    while (iterator.hasNext())
-    {
-        iterator.next();
-        iterator.value()->sendMessage( msg );
-    }
-}
+    Message newMsg( this, Message::NickNameUpdateOther, 2, Message::Manual );
+    Message oldNikcMsg( this, Message::NickName, 1, Message::Manual );
 
-/**
- * \brief
- * @param msg const QByteArray &
- */
-void ServerProtocol::nickNameMessageArrived( const Message & msg ) const
-{
-/*
-    QString newNick( msg );
+    if( msgParts == 1 )
+        newNick = msg.messagePartAt( 0 );
+    else
+        newNick = msg.messagePartAt( 1 );
 
-    QMapIterator<QTcpSocket *, Player *> iterator( Server::instance()->players() );
     while (iterator.hasNext())
     {
         iterator.next();
         if ( iterator.value()->nickname() == newNick )
+        {
+            keepNewNick = true;
+            break;
+        }
+    }
+
+    if( keepNewNick )
+    {
+        //if keeping the new nick then just resend the same msg back
+        player->setNickname( newNick );
+        player->sendMessage( msg );
+
+        if( msgParts == 1 )
+        {
+            newMsg.addPart( QString("") );
+            newMsg.addPart( newNick );
+        }
+        else
+        {
+            newMsg.addPart( oldNick );
+            newMsg.addPart( newNick );
+        }
+    }
+    else
+    {
+        oldNikcMsg.addPart( oldNick );
+        oldNikcMsg.prepareMessage();
+        player->sendMessage( oldNikcMsg );
+
+        newMsg.addPart( QString("") );
+        newMsg.addPart( oldNick );
+    }
+
+    newMsg.prepareMessage();
+    iterator.toFront();
+    while (iterator.hasNext() )
+    {
+        iterator.next();
+        if( iterator.value()->nickname() != newNick )
+            iterator.value()->sendMessage( newMsg );
+    }
+}
+
+void ServerProtocol::messageArrived( const Message &msg )
+{
+    if( msg.gameID() == NOGAME )
+        parseServerTypeMessages( msg );
+    else
+        parseGameTypeMessages( msg );
+}
+
+void ServerProtocol::parseServerTypeMessages( const Message &msg )
+{
+    switch( msg.type() )
+    {
+        case Message::Chat:
+        {
+            QMapIterator<QTcpSocket *, Player *> iterator( Server::instance()->players() );
+            while (iterator.hasNext())
+            {
+                iterator.next();
+                iterator.value()->sendMessage( msg );
+            }
+            return;
+        }
+        case Message::NickName:
+        {
+            nickNameMessageArrived( parent(), msg );
+            break;
+        }
+        case Message::Connected:
+        {
+//             playerConnectedMessage( msg );
+            break;
+        }
+        case 'l': //HostCancel
+        {
+            break;
+        }
+        case 'j': //JoinGame
+        {
+            break;
+        }
+        default:
             break;
     }
 
-    iterator.toFront();
-
-    while (iterator.hasNext())
-    {
-        iterator.next();
-        iterator.value()->sendUpdatedNick( msg );
-    }
-    */
 }
+
+void ServerProtocol::parseGameTypeMessages( const Message &msg )
+{
+}
+

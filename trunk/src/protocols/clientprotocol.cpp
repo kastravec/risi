@@ -21,6 +21,7 @@
 #include "clientprotocol.h"
 #include "playcontroller.h"
 #include "message.h"
+#include "risiApplication.h"
 
 /**
  * \class Constructor
@@ -41,14 +42,20 @@ ClientProtocol::~ClientProtocol()
 {
 }
 
+/**
+ * \internal
+ */
 void ClientProtocol::setupConnections()
 {
-// //     Protocol::setupConnections();
-//     connect( &connectionHandler, SIGNAL(messageArrived(const QByteArray, const qint8, const qint8)), this, SLOT(messageArrived(const QByteArray, const qint8, const qint8)) );
     connect( &tcpClient, SIGNAL(connectedToServer()), player, SLOT(tcpClientConnected()) );
     connect( &tcpClient, SIGNAL(disconnectedFromServer()), player, SLOT(tcpClientDisconnected()) );
 }
 
+/**
+ * \brief connects to server with ip and port
+ * @param ip const QString &
+ * @param port int
+ */
 void ClientProtocol::connectToServer( const QString &ip, int port )
 {
     if( ip.isEmpty() || port == 0 )
@@ -56,30 +63,57 @@ void ClientProtocol::connectToServer( const QString &ip, int port )
     tcpClient.connectToServer( ip, port );
 }
 
-/**
- * \brief
- * @param msg const Message &
- */
-void ClientProtocol::chatMessageArrived( const Message &msg ) const
+void ClientProtocol::messageArrived( const Message &msg )
 {
-    qDebug()<<"ClientProtocol chatMessageArrived(): "<<msg.messageData();
-/*    QString nickSize = message.left(2);
-
-    if( nickSize.contains( ESCAPECHATCHARACTER ) )
-    {
-        nickSize.remove( 0,1 );
-        message.remove( 0, 2 );
-        message =
-    }*/
-
-    player->displayChatMessage( msg.messageData() );
+    if( msg.gameID() == NOGAME )
+        parseServerTypeMessages( msg );
+    else
+        parseGameTypeMessages( msg );
 }
 
-/**
- * \brief
- * @param msg const Message &
- */
-void ClientProtocol::nickNameMessageArrived( const Message & msg ) const
+void ClientProtocol::parseServerTypeMessages( const Message &msg )
 {
+    switch( msg.type() )
+    {
+        case Message::Chat:
+        {
+            player->displayChatMessage( msg.messageData() );
+            return;
+        }
+        case Message::NickName:
+        {
+            if( msg.parts() == 1 )
+                player->setNickConfirmation( msg.messagePartAt(0) );
+            else
+                player->setNickConfirmation( msg.messagePartAt(1) );
+
+            break;
+        }
+        case Message::NickNameUpdateOther:
+        {
+
+            break;
+        }
+        case 'l': //HostCancel
+        {
+            break;
+        }
+        case 'j': //JoinGame
+        {
+            break;
+        }
+        default:
+            break;
+    }
+
+}
+
+void ClientProtocol::parseGameTypeMessages( const Message &msg )
+{
+}
+
+void ClientProtocol::updateNickOtherPlayer( const Message & msg )
+{
+
 }
 

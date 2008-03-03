@@ -47,6 +47,7 @@ class NetworkProtocol: public QObject
 
         QByteArray createPacket( const Message &msg ) const;
         qint32 sizeOfPacket( const QByteArray &packet ) const;
+        void setClientSocket( QAbstractSocket * socket );
         QString lastError() const;
 
     public slots:
@@ -60,9 +61,7 @@ class NetworkProtocol: public QObject
         qint32 packetSize;
         qint32 format;
         qint32 version;
-
         QString error;
-
         QAbstractSocket *client;
 };
 

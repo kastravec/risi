@@ -38,10 +38,13 @@ class ClientProtocol: public Protocol
 
         void connectToServer( const QString &ip, int port );
 
-    private:
-        void chatMessageArrived( const Message &msg ) const;
-        void nickNameMessageArrived( const Message & msg ) const;
+    public slots:
+        void messageArrived( const Message &msg );
 
+    private:
+        void parseServerTypeMessages( const Message &msg );
+        void parseGameTypeMessages( const Message &msg );
+        void updateNickOtherPlayer( const Message & msg );
         void setupConnections();
         PlayController *player;
         TcpClient tcpClient;

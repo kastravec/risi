@@ -23,18 +23,24 @@
 
 #include "protocol.h"
 class Message;
+class Player;
 
 class ServerProtocol : public Protocol
 {
     Q_OBJECT
 
     public:
-        ServerProtocol( QTcpSocket * client = 0, QObject *parent = 0 );
+        ServerProtocol( Player *parent = 0, QTcpSocket * client = 0 );
         ~ServerProtocol();
 
+    public slots:
+        void messageArrived( const Message &msg );
+
     private:
-        void chatMessageArrived( const Message &msg ) const;
-        void nickNameMessageArrived( const Message & msg ) const;
+        void parseServerTypeMessages( const Message &msg );
+        void parseGameTypeMessages( const Message &msg );
+        void nickNameMessageArrived( QObject *sender, const Message & msg );
+        Player *player;
 };
 
 #endif
